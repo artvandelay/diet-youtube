@@ -1,0 +1,65 @@
+/* Early cloak: hide impulse home so Diet-Youtube can paint first. */
+html.diet-yt-active #diet-yt-root {
+  --diet-offset-top: 56px;
+  --diet-offset-left: 72px;
+  position: fixed;
+  top: var(--diet-offset-top);
+  left: var(--diet-offset-left);
+  right: 0;
+  bottom: 0;
+  z-index: 2200;
+  background: #0f0f0f;
+  display: flex;
+  flex-direction: column;
+}
+html.diet-yt-active ytd-browse[page-subtype="home"] ytd-two-column-browse-results-renderer,
+html.diet-yt-active ytd-browse[page-subtype="home"] #primary,
+html.diet-yt-active ytd-browse[page-subtype="home"] ytd-rich-grid-renderer,
+html.diet-yt-active ytd-browse[page-subtype="home"] ytd-rich-item-renderer,
+html.diet-yt-active[data-diet-route="home"] #contents.ytd-rich-grid-renderer,
+html.diet-yt-active[data-diet-route="home"] ytd-browse[page-subtype="home"] #header {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html.diet-yt-active #diet-yt-root {
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* Keep masthead + guide usable; we sit below them. */
+html.diet-yt-active ytd-masthead,
+html.diet-yt-active #masthead-container,
+html.diet-yt-active #guide,
+html.diet-yt-active ytd-mini-guide-renderer {
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* pushState home can leave the watch player mounted — cover it. */
+html.diet-yt-active[data-diet-route="home"] ytd-watch-flexy,
+html.diet-yt-active[data-diet-route="home"] #player {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Classic boot chrome: never leave an empty black panel on Home. */
+html.diet-yt-active #diet-yt-root .diet-yt-boot-chrome {
+  flex: 0 0 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #aaa;
+  font: 500 14px "Roboto", "Arial", sans-serif;
+  background: #0f0f0f;
+}
+html.diet-yt-active #diet-yt-root .diet-yt-boot-chrome .is-active {
+  color: #f1f1f1;
+}
+html.diet-yt-active #diet-yt-root .diet-yt-boot-body {
+  flex: 1 1 auto;
+  background: #0f0f0f;
+}

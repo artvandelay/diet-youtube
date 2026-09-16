@@ -1,0 +1,747 @@
+#diet-yt-root {
+  --diet-bg: #0f0f0f;
+  --diet-elev: #212121;
+  --diet-elev-2: #282828;
+  --diet-hover: #3f3f3f;
+  --diet-border: rgba(255, 255, 255, 0.1);
+  --diet-text: #f1f1f1;
+  --diet-muted: #aaaaaa;
+  --diet-red: #ff4d4d;
+  --diet-blue: #3ea6ff;
+  --diet-offset-top: 56px;
+  --diet-offset-left: 72px;
+  --diet-chrome-h: 48px;
+  position: fixed;
+  top: var(--diet-offset-top);
+  left: var(--diet-offset-left);
+  right: 0;
+  bottom: 0;
+  z-index: 2200;
+  display: flex;
+  flex-direction: column;
+  background: var(--diet-bg);
+  color: var(--diet-text);
+  font-family: "Roboto", "Arial", sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  overflow: hidden;
+}
+
+#diet-yt-root * {
+  box-sizing: border-box;
+}
+
+#diet-yt-root[hidden] {
+  display: none !important;
+}
+
+.diet-yt-chrome {
+  flex: 0 0 auto;
+  height: var(--diet-chrome-h);
+  min-height: var(--diet-chrome-h);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px 0 12px;
+  border-bottom: 1px solid var(--diet-border);
+  background: var(--diet-bg);
+  z-index: 2;
+}
+
+.diet-yt-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.diet-yt-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.diet-yt-tab,
+.diet-yt-plus {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--diet-muted);
+  font: inherit;
+  font-weight: 500;
+  padding: 0 14px;
+  height: var(--diet-chrome-h);
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.diet-yt-tab:hover,
+.diet-yt-plus:hover {
+  color: var(--diet-text);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.diet-yt-tab[aria-selected="true"] {
+  color: var(--diet-text);
+}
+
+.diet-yt-tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--diet-text);
+}
+
+.diet-yt-tab.is-dragging {
+  opacity: 0.35;
+}
+
+.diet-yt-drop {
+  width: 3px;
+  align-self: stretch;
+  background: var(--diet-blue);
+  border-radius: 2px;
+  margin: 8px 0;
+}
+
+.diet-yt-tab-edit {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+}
+
+.diet-yt-tab-edit:hover {
+  background: var(--diet-hover);
+  opacity: 1;
+}
+
+.diet-yt-plus {
+  font-size: 20px;
+  font-weight: 400;
+  padding: 0 10px;
+  color: var(--diet-muted);
+}
+
+.diet-yt-chrome-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.diet-yt-seg {
+  display: inline-flex;
+  border: 1px solid var(--diet-border);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.diet-yt-seg button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--diet-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.diet-yt-seg button[aria-pressed="true"] {
+  background: #fff;
+  color: #0f0f0f;
+}
+
+.diet-yt-view-wrap {
+  position: relative;
+}
+
+.diet-yt-icon-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--diet-text);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.diet-yt-icon-btn:hover,
+.diet-yt-icon-btn[aria-expanded="true"] {
+  background: var(--diet-hover);
+}
+
+.diet-yt-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 280px;
+  background: var(--diet-elev-2);
+  color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+  padding: 8px 0;
+  z-index: 20;
+}
+
+.diet-yt-menu[hidden] {
+  display: none;
+}
+
+.diet-yt-menu-label {
+  padding: 8px 16px 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #e0e0e0;
+  letter-spacing: 0.01em;
+}
+
+.diet-yt-menu button.diet-yt-item {
+  width: 100%;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  text-align: left;
+  padding: 8px 16px 8px 36px;
+  cursor: pointer;
+  position: relative;
+}
+
+.diet-yt-menu button.diet-yt-item:hover {
+  background: #3e3e3e;
+}
+
+.diet-yt-menu button.diet-yt-item[aria-checked="true"]::before {
+  content: "✓";
+  position: absolute;
+  left: 14px;
+  top: 8px;
+  font-size: 13px;
+}
+
+.diet-yt-menu-sep {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 8px 0;
+}
+
+.diet-yt-menu-hint {
+  margin: 0 12px 8px;
+  padding: 0 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #aaa;
+}
+
+.diet-yt-menu-save {
+  width: calc(100% - 24px);
+  margin: 4px 12px 4px;
+  appearance: none;
+  border: 0;
+  border-radius: 18px;
+  background: #fff;
+  color: #0f0f0f;
+  font: inherit;
+  font-weight: 500;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.diet-yt-menu-save:disabled {
+  background: #3f3f3f;
+  color: #888;
+  cursor: default;
+}
+
+.diet-yt-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  position: relative;
+}
+
+.diet-yt-bulk {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 20px 0;
+  color: var(--diet-muted);
+  font-size: 13px;
+}
+
+.diet-yt-bulk[hidden] {
+  display: none;
+}
+
+.diet-yt-danger {
+  appearance: none;
+  border: 0;
+  background: #272727;
+  color: #fff;
+  border-radius: 18px;
+  padding: 6px 14px;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.diet-yt-danger:hover {
+  background: #3f3f3f;
+}
+
+.diet-yt-ghost {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--diet-blue);
+  font: inherit;
+  cursor: pointer;
+}
+
+.diet-yt-icons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--diet-icon-min, 210px), 1fr));
+  gap: 20px 12px;
+  padding: 16px 24px 64px;
+}
+
+.diet-yt-card {
+  position: relative;
+  cursor: pointer;
+  border-radius: 12px;
+  outline: none;
+}
+
+.diet-yt-card:hover .diet-yt-card-x,
+.diet-yt-card:focus-visible .diet-yt-card-x,
+.diet-yt-card.is-selected .diet-yt-check {
+  opacity: 1;
+}
+
+.diet-yt-card.is-selected {
+  outline: 2px solid var(--diet-blue);
+  outline-offset: 3px;
+}
+
+.diet-yt-thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #1a1a1a;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.diet-yt-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.diet-yt-dur {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+.diet-yt-card-meta {
+  padding: 8px 2px 0;
+}
+
+.diet-yt-card-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--diet-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.diet-yt-card-sub {
+  margin-top: 4px;
+  color: var(--diet-muted);
+  font-size: 12px;
+}
+
+.diet-yt-check,
+.diet-yt-card-x {
+  position: absolute;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.diet-yt-check {
+  top: 8px;
+  left: 8px;
+  background: rgba(15, 15, 15, 0.72);
+  color: #fff;
+}
+
+.diet-yt-card-x {
+  top: 8px;
+  right: 8px;
+  background: rgba(15, 15, 15, 0.72);
+  color: #fff;
+}
+
+.diet-yt-check:hover,
+.diet-yt-card-x:hover {
+  background: rgba(0, 0, 0, 0.88);
+}
+
+.diet-yt-list {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px 64px;
+}
+
+.diet-yt-row {
+  display: grid;
+  grid-template-columns: 28px 168px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.diet-yt-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.diet-yt-row.is-selected {
+  background: rgba(62, 166, 255, 0.12);
+}
+
+.diet-yt-row .diet-yt-thumb {
+  border-radius: 8px;
+}
+
+.diet-yt-row-title {
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.diet-yt-row-sub {
+  color: var(--diet-muted);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.diet-yt-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.diet-yt-row .diet-yt-check,
+.diet-yt-row .diet-yt-card-x {
+  position: static;
+  opacity: 1;
+  background: transparent;
+  color: var(--diet-muted);
+}
+
+.diet-yt-row .diet-yt-card-x:hover {
+  color: var(--diet-text);
+  background: var(--diet-hover);
+}
+
+.diet-yt-empty,
+.diet-yt-error,
+.diet-yt-loading {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--diet-muted);
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.diet-yt-empty h2,
+.diet-yt-error h2 {
+  color: var(--diet-text);
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0 0 8px;
+}
+
+.diet-yt-empty p,
+.diet-yt-error p {
+  margin: 0;
+}
+
+.diet-yt-retry {
+  margin-top: 16px;
+  appearance: none;
+  border: 0;
+  background: #fff;
+  color: #0f0f0f;
+  border-radius: 18px;
+  padding: 8px 16px;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.diet-yt-skel {
+  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 37%, #1a1a1a 63%);
+  background-size: 400% 100%;
+  animation: diet-yt-shimmer 1.2s ease-in-out infinite;
+  border-radius: 12px;
+}
+
+@keyframes diet-yt-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0 0; }
+}
+
+.diet-yt-skel-card .diet-yt-skel-thumb {
+  aspect-ratio: 16 / 9;
+}
+
+.diet-yt-skel-card .diet-yt-skel-line {
+  height: 12px;
+  margin-top: 10px;
+  width: 88%;
+}
+
+.diet-yt-skel-card .diet-yt-skel-line.short {
+  width: 52%;
+}
+
+.diet-yt-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 30;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+.diet-yt-sheet {
+  width: min(520px, 100%);
+  background: var(--diet-elev-2);
+  border-radius: 16px;
+  padding: 20px 20px 16px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+.diet-yt-sheet h2 {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.diet-yt-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.diet-yt-field label {
+  font-size: 12px;
+  color: #e0e0e0;
+}
+
+.diet-yt-field input {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #121212;
+  color: #fff;
+  border-radius: 8px;
+  padding: 9px 10px;
+  font: inherit;
+}
+
+.diet-yt-field input:focus {
+  outline: 2px solid var(--diet-blue);
+  border-color: transparent;
+}
+
+.diet-yt-source-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.diet-yt-source-row strong {
+  font-weight: 500;
+}
+
+.diet-yt-source-id {
+  display: block;
+  color: #aaa;
+  font-size: 11px;
+  margin-top: 2px;
+  word-break: break-all;
+}
+
+.diet-yt-sheet-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.diet-yt-sheet-actions button {
+  appearance: none;
+  border: 0;
+  border-radius: 18px;
+  padding: 8px 14px;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.diet-yt-btn-secondary {
+  background: transparent;
+  color: #fff;
+}
+
+.diet-yt-btn-secondary:hover {
+  background: #3e3e3e;
+}
+
+.diet-yt-btn-primary {
+  background: #fff;
+  color: #0f0f0f;
+}
+
+.diet-yt-btn-delete {
+  background: transparent;
+  color: #ff8a80;
+  margin-right: auto;
+}
+
+.diet-yt-suggest {
+  background: #121212;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  margin-top: 6px;
+  max-height: 180px;
+  overflow: auto;
+}
+
+.diet-yt-suggest button {
+  width: 100%;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-align: left;
+  padding: 8px 10px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.diet-yt-suggest button:hover {
+  background: #3e3e3e;
+}
+
+.diet-yt-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  background: #f1f1f1;
+  color: #0f0f0f;
+  border-radius: 8px;
+  padding: 10px 12px 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  z-index: 40;
+}
+
+.diet-yt-toast button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #065fd4;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.diet-yt-advanced {
+  margin: 8px 0 0;
+}
+
+.diet-yt-advanced summary {
+  cursor: pointer;
+  color: #ccc;
+  font-size: 12px;
+}
+
+@media (max-width: 720px) {
+  .diet-yt-icons {
+    grid-template-columns: repeat(auto-fill, minmax(min(160px, var(--diet-icon-min, 210px)), 1fr));
+    padding: 12px 12px 64px;
+  }
+
+  .diet-yt-row {
+    grid-template-columns: 24px 120px minmax(0, 1fr);
+  }
+
+  .diet-yt-row-actions {
+    display: none;
+  }
+
+  .diet-yt-chrome {
+    padding: 0 8px;
+  }
+
+  .diet-yt-tab {
+    padding: 0 10px;
+  }
+}

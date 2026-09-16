@@ -1,0 +1,28 @@
+{
+  "name": "diet-youtube",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Chrome MV3 extension that replaces YouTube Home with a queue-first Diet-Youtube reading surface.",
+  "scripts": {
+    "build": "node scripts/build-content.mjs",
+    "test": "node --test tests/*.test.js",
+    "pretest": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12"
+  },
+  "author": "artvandelay",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artvandelay/diet-youtube.git"
+  },
+  "bugs": {
+    "url": "https://github.com/artvandelay/diet-youtube/issues"
+  },
+  "homepage": "https://github.com/artvandelay/diet-youtube#readme"
+}
