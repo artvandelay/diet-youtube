@@ -8,6 +8,8 @@ Nothing leaves your browser. Preferences stay in `chrome.storage`. Playlist read
 
 **Author:** [artvandelay](https://github.com/artvandelay) · **Version:** 1.1.0 · **License:** MIT
 
+**Live page:** [artvandelay.github.io/diet-youtube](https://artvandelay.github.io/diet-youtube/)
+
 ## Screenshots
 
 Subscriptions as a chronological Icons grid (queue-first chrome above):
