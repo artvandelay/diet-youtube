@@ -359,6 +359,116 @@
     return uniqueVideos(lists.flat());
   }
 
+  function normalizePlaylistId(id) {
+    const raw = String(id || "").trim();
+    if (!raw) return "";
+    return raw.startsWith("VL") ? raw.slice(2) : raw;
+  }
+
+  function playlistTitleOf(value) {
+    const t = textOf(value);
+    return t;
+  }
+
+  function extractPlaylists(root) {
+    const out = [];
+    const seen = new Set();
+    walk(root, (node) => {
+      let id = "";
+      let label = "";
+      let alreadyIn = false;
+      if (node.playlistAddToOptionRenderer?.playlistId) {
+        const r = node.playlistAddToOptionRenderer;
+        id = normalizePlaylistId(r.playlistId);
+        label = playlistTitleOf(r.title);
+        alreadyIn = r.containsSelectedVideos === "ALL";
+      } else if (node.gridPlaylistRenderer?.playlistId) {
+        id = normalizePlaylistId(node.gridPlaylistRenderer.playlistId);
+        label = playlistTitleOf(node.gridPlaylistRenderer.title);
+      } else if (node.playlistRenderer?.playlistId) {
+        id = normalizePlaylistId(node.playlistRenderer.playlistId);
+        label = playlistTitleOf(node.playlistRenderer.title);
+      } else if (node.lockupViewModel?.contentType && String(node.lockupViewModel.contentType).toUpperCase().includes("PLAYLIST")) {
+        const lockup = node.lockupViewModel;
+        const browse =
+          lockup.rendererContext?.commandContext?.onTap?.innertubeCommand?.browseEndpoint || {};
+        id = normalizePlaylistId((browse.browseId || lockup.contentId || "").replace(/^VL/, ""));
+        label = playlistTitleOf(lockup.metadata?.lockupMetadataViewModel?.title);
+      }
+      if (!id || seen.has(id)) return;
+      seen.add(id);
+      if (id === "WL") label = label || "Watch later";
+      out.push({ id, label: label || "Playlist", alreadyIn });
+    });
+    return out;
+  }
+
+  function interpretAddStatus(json, alreadyIn) {
+    const status = String(json?.status || json?.actions?.[0]?.status || "");
+    if (/DUPLICATE|ALREADY_EXISTS|ALREADY_IN|ALREADY_ADDED/i.test(status)) {
+      return { ok: true, alreadyIn: true, status: status || "STATUS_DUPLICATE" };
+    }
+    if (status && status !== "STATUS_SUCCEEDED" && status !== "STATUS_NOOP") {
+      throw new Error(status || "Playlist add failed");
+    }
+    return { ok: true, alreadyIn: Boolean(alreadyIn), status: status || "STATUS_SUCCEEDED" };
+  }
+
+  async function listPlaylists(videoIds) {
+    await waitForCfg();
+    const ids = (videoIds || []).filter(Boolean);
+    if (ids.length) {
+      try {
+        const json = await innertube("playlist/get_add_to_playlist", { videoIds: ids });
+        const fromApi = extractPlaylists(json);
+        if (fromApi.length) return fromApi;
+      } catch (_) {
+        /* fall through to library browse */
+      }
+    }
+    try {
+      const lib = await innertube("browse", { browseId: "FElibrary" });
+      const fromLib = extractPlaylists(lib);
+      if (fromLib.length) return fromLib;
+    } catch (_) {
+      /* ignore */
+    }
+    try {
+      const agg = await innertube("browse", { browseId: "FEplaylist_aggregation" });
+      return extractPlaylists(agg);
+    } catch (_) {
+      return [];
+    }
+  }
+
+  async function addToPlaylist(playlistId, videoIds) {
+    await waitForCfg();
+    const id = normalizePlaylistId(playlistId) || "WL";
+    const ids = (videoIds || []).filter(Boolean);
+    if (!ids.length) return { ok: true, alreadyIn: false, status: "STATUS_NOOP" };
+
+    let alreadyIn = false;
+    try {
+      const options = await listPlaylists(ids);
+      const match = options.find((p) => p.id === id);
+      if (match?.alreadyIn) {
+        return { ok: true, alreadyIn: true, status: "STATUS_ALREADY_IN" };
+      }
+    } catch (_) {
+      /* add anyway */
+    }
+
+    const actions = ids.map((videoId) => ({
+      action: "ACTION_ADD_VIDEO",
+      addedVideoId: videoId,
+    }));
+    const json = await innertube("browse/edit_playlist", {
+      playlistId: id,
+      actions,
+    });
+    return interpretAddStatus(json, alreadyIn);
+  }
+
   async function removeFromPlaylist(playlistId, items) {
     await waitForCfg();
     const id = playlistId || "WL";
@@ -473,6 +583,10 @@
         return fetchCustom(payload?.sources || []);
       case "removeFromPlaylist":
         return removeFromPlaylist(payload?.playlistId || "WL", payload?.items || []);
+      case "addToPlaylist":
+        return addToPlaylist(payload?.playlistId || "WL", payload?.videoIds || []);
+      case "listPlaylists":
+        return listPlaylists(payload?.videoIds || []);
       case "resolveSource":
         return resolveSource(payload?.query || "");
       default:

@@ -1,4 +1,5 @@
 import { ICONS_DENSITY, LAYOUT, POSTED_WITHIN, SORT } from "../lib/constants.js";
+import { moreMenuItems } from "../lib/playlist-save.js";
 import { iconsMinmaxPx, normalizeIconsDensity } from "../lib/view.js";
 import { buildTabStrip, tabLabel } from "../lib/tabs.js";
 import { sheetActionFromClick } from "../lib/sheet-events.js";
@@ -141,6 +142,13 @@ export function createShell(root, handlers) {
   });
 
   surfaceEl.addEventListener("click", (e) => {
+    const more = e.target.closest("[data-more]");
+    if (more) {
+      e.preventDefault();
+      e.stopPropagation();
+      handlers.onOpenMore(more.dataset.more);
+      return;
+    }
     const remove = e.target.closest("[data-remove]");
     if (remove) {
       e.preventDefault();
@@ -189,6 +197,29 @@ export function createShell(root, handlers) {
     if (action === "resolve") handlers.onResolveSource();
     if (action === "undo") handlers.onUndo();
     if (action === "dismiss") handlers.onCloseSheet();
+    if (e.target.closest("[data-save-wl]")) {
+      e.preventDefault();
+      e.stopPropagation();
+      handlers.onSaveToWatchLater(e.target.closest("[data-save-wl]").dataset.saveWl);
+      return;
+    }
+    if (e.target.closest("[data-save-playlist]")) {
+      e.preventDefault();
+      e.stopPropagation();
+      handlers.onOpenPlaylistPicker(e.target.closest("[data-save-playlist]").dataset.savePlaylist);
+      return;
+    }
+    if (e.target.closest("[data-pick-playlist]")) {
+      e.preventDefault();
+      e.stopPropagation();
+      const btn = e.target.closest("[data-pick-playlist]");
+      handlers.onPickPlaylist(btn.dataset.pickPlaylist, btn.dataset.playlistLabel);
+      return;
+    }
+    if (e.target.closest("[data-dismiss-picker]")) {
+      e.preventDefault();
+      handlers.onClosePlaylistPicker();
+    }
   });
 
   menuEl.addEventListener("click", (e) => {
@@ -202,8 +233,9 @@ export function createShell(root, handlers) {
 
   const onDocClick = (e) => {
     if (!root.contains(e.target)) return;
-    if (e.target.closest?.(".diet-yt-sheet, .diet-yt-sheet-backdrop, .diet-yt-toast")) return;
+    if (e.target.closest?.(".diet-yt-sheet, .diet-yt-sheet-backdrop, .diet-yt-toast, .diet-yt-picker")) return;
     if (!e.target.closest(".diet-yt-view-wrap")) handlers.onCloseViewMenu();
+    if (!e.target.closest("[data-more], .diet-yt-more-menu")) handlers.onCloseMore?.();
   };
   document.addEventListener("click", onDocClick);
 
@@ -214,6 +246,8 @@ export function createShell(root, handlers) {
     renderBulk(bulkEl, state);
     renderSurface(surfaceEl, state);
     renderSheet(bodyEl, state, handlers);
+    renderMoreMenu(root, bodyEl, state);
+    renderPlaylistPicker(bodyEl, state, handlers);
     renderToast(bodyEl, state);
   }
 
@@ -307,6 +341,11 @@ function metaLine(video) {
   return [video.channelTitle, video.viewCountText, video.publishedText].filter(Boolean).join(" · ");
 }
 
+function moreButton(video, state) {
+  const open = state.cardMenu?.videoId === video.videoId;
+  return `<button type="button" class="diet-yt-more" data-more="${escapeHtml(video.videoId)}" title="More actions" aria-label="More actions for ${escapeHtml(video.title)}" aria-haspopup="menu" aria-expanded="${open}">${svg(ICONS.more, 20)}</button>`;
+}
+
 function cardActions(video, state) {
   const selected = state.selected?.has(video.videoId);
   const remove = state.canRemove
@@ -315,7 +354,7 @@ function cardActions(video, state) {
   const check = state.canRemove
     ? `<button type="button" class="diet-yt-check" data-toggle="${escapeHtml(video.videoId)}" aria-pressed="${selected}" aria-label="Select">${selected ? svg(ICONS.check, 16) : ""}</button>`
     : "";
-  return check + remove;
+  return check + remove + moreButton(video, state);
 }
 
 function renderSurface(surfaceEl, state) {
@@ -349,7 +388,7 @@ function renderSurface(surfaceEl, state) {
           <div>${state.canRemove ? `<button type="button" class="diet-yt-check" data-toggle="${escapeHtml(video.videoId)}" aria-pressed="${selected}">${selected ? "✓" : ""}</button>` : ""}</div>
           <div class="diet-yt-thumb"><img alt="" src="${escapeHtml(video.thumbUrl)}">${video.lengthText ? `<span class="diet-yt-dur">${escapeHtml(video.lengthText)}</span>` : ""}</div>
           <div><div class="diet-yt-row-title">${escapeHtml(video.title)}</div><div class="diet-yt-row-sub">${escapeHtml(metaLine(video))}</div></div>
-          <div class="diet-yt-row-actions">${state.canRemove ? `<button type="button" class="diet-yt-card-x" data-remove="${escapeHtml(video.videoId)}" aria-label="Remove">✕</button>` : ""}</div>
+          <div class="diet-yt-row-actions">${state.canRemove ? `<button type="button" class="diet-yt-card-x" data-remove="${escapeHtml(video.videoId)}" aria-label="Remove">✕</button>` : ""}${moreButton(video, state)}</div>
         </div>`;
       })
       .join("")}</div>`;
@@ -482,6 +521,75 @@ function renderSheet(bodyEl, state, handlers) {
   });
   bodyEl.appendChild(node);
   queueMicrotask(() => nameInput.focus());
+}
+
+function renderMoreMenu(root, bodyEl, state) {
+  bodyEl.querySelector(".diet-yt-more-menu")?.remove();
+  const videoId = state.cardMenu?.videoId;
+  if (!videoId) return;
+  const items = moreMenuItems(state.session.tabId);
+  const menu = el(`<div class="diet-yt-more-menu" role="menu">
+    ${items
+      .map((item) => {
+        const attr = item.id === "save-wl" ? "data-save-wl" : "data-save-playlist";
+        return `<button type="button" class="diet-yt-item" role="menuitem" ${attr}="${escapeHtml(videoId)}">${escapeHtml(item.label)}</button>`;
+      })
+      .join("")}
+  </div>`);
+  bodyEl.appendChild(menu);
+  const btn = root.querySelector(`[data-more="${CSS.escape(videoId)}"]`);
+  if (!btn) return;
+  const rootRect = root.getBoundingClientRect();
+  const btnRect = btn.getBoundingClientRect();
+  const top = btnRect.bottom - rootRect.top + 4;
+  let left = btnRect.right - rootRect.left - 240;
+  left = Math.max(8, Math.min(left, rootRect.width - 248));
+  menu.style.top = `${top}px`;
+  menu.style.left = `${left}px`;
+}
+
+function renderPlaylistPicker(bodyEl, state, handlers) {
+  bodyEl.querySelector(".diet-yt-picker")?.remove();
+  const picker = state.playlistPicker;
+  if (!picker) return;
+  const items = picker.items || [];
+  const node = el(`<div class="diet-yt-sheet-backdrop diet-yt-picker" data-dismiss-picker>
+    <div class="diet-yt-sheet" role="dialog" aria-labelledby="diet-yt-picker-title">
+      <h2 id="diet-yt-picker-title">Save to playlist</h2>
+      ${
+        picker.loading
+          ? `<p class="diet-yt-card-sub">Loading your playlists…</p>`
+          : picker.error
+            ? `<p class="diet-yt-card-sub">${escapeHtml(picker.error)}</p>`
+            : !items.length
+              ? `<p class="diet-yt-card-sub">No playlists found. Watch later is still available from the ⋮ menu.</p>`
+              : `<div class="diet-yt-picker-list">${items
+                  .map(
+                    (p) =>
+                      `<button type="button" class="diet-yt-item" data-pick-playlist="${escapeHtml(p.id)}" data-playlist-label="${escapeHtml(p.label)}">${escapeHtml(p.label)}${p.alreadyIn ? `<span class="diet-yt-picker-flag">Saved</span>` : ""}</button>`
+                  )
+                  .join("")}</div>`
+      }
+      <div class="diet-yt-sheet-actions">
+        <button type="button" class="diet-yt-btn-secondary" data-dismiss-picker>Cancel</button>
+      </div>
+    </div>
+  </div>`);
+  node.addEventListener("click", (e) => {
+    if (e.target === node) handlers.onClosePlaylistPicker();
+  });
+  node.querySelector("[data-dismiss-picker].diet-yt-btn-secondary")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    handlers.onClosePlaylistPicker();
+  });
+  node.querySelectorAll("[data-pick-playlist]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      handlers.onPickPlaylist(btn.dataset.pickPlaylist, btn.dataset.playlistLabel);
+    });
+  });
+  bodyEl.appendChild(node);
 }
 
 function renderToast(bodyEl, state) {

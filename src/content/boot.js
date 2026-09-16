@@ -138,7 +138,21 @@
     }
   }
 
+  function deactivate() {
+    dietEnabled = false;
+    homeIntentUntil = 0;
+    pendingNav = null;
+    delete html.dataset.dietHomeIntent;
+    delete html.dataset.dietNavEvent;
+    delete html.dataset.dietRoute;
+    html.classList.remove("diet-yt-active");
+    html.dataset.dietEnabled = "0";
+    var root = document.getElementById("diet-yt-root");
+    if (root) root.remove();
+  }
+
   function activateHome() {
+    if (!dietEnabled) return;
     html.classList.add("diet-yt-active");
     html.dataset.dietRoute = "home";
     ensureSkeleton();
@@ -291,6 +305,7 @@
   }
 
   function interceptHome(event) {
+    if (!dietEnabled) return;
     if (!event) return;
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     if (event.button === 1 || event.which === 2) return;
@@ -319,6 +334,7 @@
   }
 
   function onYtNavigate(event) {
+    if (!dietEnabled) return;
     var dest = destFromEvent(event) || { pathname: location.pathname, search: location.search };
     if (homeIntentActive() && isWlPlaylist(pathOf(dest.pathname + dest.search), dest.search)) {
       if (event && event.preventDefault) event.preventDefault();
@@ -333,12 +349,38 @@
   }
 
   var html = document.documentElement;
+  var dietEnabled = true;
   html.dataset.dietYt = "1";
 
-  if (isHome(pathOf(location.href))) {
-    setPendingNav("cold");
-    markHomeIntent();
-    activateHome();
+  function startIfHome() {
+    if (!dietEnabled) return;
+    if (isHome(pathOf(location.href))) {
+      setPendingNav("cold");
+      markHomeIntent();
+      activateHome();
+    }
+  }
+
+  function applyEnabled(value) {
+    dietEnabled = value !== false;
+    html.dataset.dietEnabled = dietEnabled ? "1" : "0";
+    if (!dietEnabled) deactivate();
+    else startIfHome();
+  }
+
+  if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+    chrome.storage.local.get("dietYtEnabled", function (got) {
+      applyEnabled(got.dietYtEnabled !== false);
+    });
+    if (chrome.storage.onChanged) {
+      chrome.storage.onChanged.addListener(function (changes, area) {
+        if (area === "local" && changes.dietYtEnabled) {
+          applyEnabled(changes.dietYtEnabled.newValue !== false);
+        }
+      });
+    }
+  } else {
+    startIfHome();
   }
 
   window.addEventListener("pointerdown", interceptHome, true);
@@ -353,6 +395,7 @@
   }, true);
 
   var recoverTimer = setInterval(function () {
+    if (!dietEnabled) return;
     if (!homeIntentActive()) return;
     recoverWlBounce();
     if (isHome(pathOf(location.href))) {
@@ -371,6 +414,7 @@
     homeIntentActive: homeIntentActive,
     forceDietHomeUrl: forceDietHomeUrl,
     activateHome: activateHome,
+    deactivate: deactivate,
     ensureSkeleton: ensureSkeleton,
     setPendingNav: setPendingNav,
     getPendingNav: getPendingNav,

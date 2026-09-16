@@ -2,7 +2,7 @@
 
 export const APP_NAME = "Diet-Youtube";
 export const APP_ID = "diet-youtube";
-export const APP_VERSION = "1.1.0";
+export const APP_VERSION = "1.2.0";
 
 export const SYSTEM_TAB = Object.freeze({
   FEED: "feed",

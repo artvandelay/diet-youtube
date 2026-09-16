@@ -41,6 +41,7 @@
     postedWithin: POSTED_WITHIN.ANY,
     density: DEFAULT_ICONS_DENSITY
   });
+  var WATCH_LATER_PLAYLIST_ID = "WL";
   var MSG = Object.freeze({
     ISOLATED: "diet-yt-isolated",
     MAIN: "diet-yt-main"
@@ -50,6 +51,78 @@
     [SYSTEM_TAB.WATCH_LATER]: "Watch later",
     [SYSTEM_TAB.SUBSCRIPTIONS]: "Subscriptions"
   });
+
+  // src/lib/enabled.js
+  var ENABLED_STORAGE_KEY = "dietYtEnabled";
+  function isDietEnabled(value) {
+    return value !== false;
+  }
+  function shouldInjectSurface({ enabled } = {}) {
+    return isDietEnabled(enabled);
+  }
+
+  // src/lib/playlist-save.js
+  function normalizePlaylistId(id) {
+    const raw = String(id || "").trim();
+    if (!raw) return "";
+    return raw.startsWith("VL") ? raw.slice(2) : raw;
+  }
+  function playlistDisplayName(id, label) {
+    const pid = normalizePlaylistId(id);
+    if (pid === WATCH_LATER_PLAYLIST_ID || pid === "WL") return "Watch later";
+    if (pid === "LL") return "Liked videos";
+    return String(label || "").trim() || "Playlist";
+  }
+  function canSaveToWatchLater(tabId) {
+    return tabId !== SYSTEM_TAB.WATCH_LATER;
+  }
+  function moreMenuItems(tabId) {
+    const items = [];
+    if (canSaveToWatchLater(tabId)) {
+      items.push({ id: "save-wl", label: "Save to Watch later" });
+    }
+    items.push({ id: "save-playlist", label: "Save to playlist\u2026" });
+    return items;
+  }
+  function playlistSourcesFromPrefs(prefs) {
+    const out = [];
+    for (const feed of prefs?.customFeeds || []) {
+      for (const source of feed.sources || []) {
+        if (source.type === "playlist" && source.id) {
+          out.push({
+            id: normalizePlaylistId(source.id),
+            label: source.label || feed.name || "Playlist",
+            type: "playlist"
+          });
+        }
+      }
+    }
+    return out;
+  }
+  function mergeSaveTargets({ library = [], feedSources = [] } = {}) {
+    const seen = /* @__PURE__ */ new Set();
+    const out = [];
+    const push = (item, alreadyIn = false) => {
+      const id = normalizePlaylistId(item?.id);
+      if (!id || seen.has(id)) return;
+      seen.add(id);
+      out.push({
+        id,
+        label: playlistDisplayName(id, item.label),
+        alreadyIn: Boolean(item.alreadyIn || alreadyIn)
+      });
+    };
+    push({ id: WATCH_LATER_PLAYLIST_ID, label: "Watch later" });
+    for (const source of feedSources) push(source);
+    for (const item of library) push(item);
+    return out;
+  }
+  function saveToastMessage({ alreadyIn = false, playlistLabel = "playlist", count = 1 } = {}) {
+    const name = playlistLabel || "playlist";
+    if (alreadyIn) return `Already in ${name}`;
+    if (count > 1) return `Saved ${count} to ${name}`;
+    return `Saved to ${name}`;
+  }
 
   // src/lib/nav-policy.js
   var NAV_EVENT = Object.freeze({
@@ -851,7 +924,8 @@
     sliders: `<path d="M3 6h10v2H3V6zm0 10h6v2H3v-2zm8 2v-2h10v2H11zM21 8h-6V6h6v2zM9 11H3v2h6v2l3-3-3-3v2zm12 0h-8v2h8v-2z"/>`,
     close: `<path d="M18.3 5.71 12 12.01l-6.3-6.3-1.4 1.41 6.29 6.29-6.3 6.3 1.42 1.4 6.29-6.29 6.3 6.3 1.4-1.42-6.29-6.29 6.3-6.3z"/>`,
     pencil: `<path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>`,
-    check: `<path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>`
+    check: `<path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>`,
+    more: `<path d="M12 16.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zM10.5 12c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5-1.5.67-1.5 1.5zm0-6c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5S13.33 4.5 12 4.5 10.5 5.17 10.5 6z"/>`
   };
 
   // src/ui/shell.js
@@ -977,6 +1051,13 @@
       }
     });
     surfaceEl.addEventListener("click", (e) => {
+      const more = e.target.closest("[data-more]");
+      if (more) {
+        e.preventDefault();
+        e.stopPropagation();
+        handlers2.onOpenMore(more.dataset.more);
+        return;
+      }
       const remove = e.target.closest("[data-remove]");
       if (remove) {
         e.preventDefault();
@@ -1023,6 +1104,29 @@
       if (action === "resolve") handlers2.onResolveSource();
       if (action === "undo") handlers2.onUndo();
       if (action === "dismiss") handlers2.onCloseSheet();
+      if (e.target.closest("[data-save-wl]")) {
+        e.preventDefault();
+        e.stopPropagation();
+        handlers2.onSaveToWatchLater(e.target.closest("[data-save-wl]").dataset.saveWl);
+        return;
+      }
+      if (e.target.closest("[data-save-playlist]")) {
+        e.preventDefault();
+        e.stopPropagation();
+        handlers2.onOpenPlaylistPicker(e.target.closest("[data-save-playlist]").dataset.savePlaylist);
+        return;
+      }
+      if (e.target.closest("[data-pick-playlist]")) {
+        e.preventDefault();
+        e.stopPropagation();
+        const btn = e.target.closest("[data-pick-playlist]");
+        handlers2.onPickPlaylist(btn.dataset.pickPlaylist, btn.dataset.playlistLabel);
+        return;
+      }
+      if (e.target.closest("[data-dismiss-picker]")) {
+        e.preventDefault();
+        handlers2.onClosePlaylistPicker();
+      }
     });
     menuEl.addEventListener("click", (e) => {
       const item = e.target.closest("[data-sort],[data-posted],[data-home],[data-density]");
@@ -1034,8 +1138,9 @@
     });
     const onDocClick = (e) => {
       if (!root2.contains(e.target)) return;
-      if (e.target.closest?.(".diet-yt-sheet, .diet-yt-sheet-backdrop, .diet-yt-toast")) return;
+      if (e.target.closest?.(".diet-yt-sheet, .diet-yt-sheet-backdrop, .diet-yt-toast, .diet-yt-picker")) return;
       if (!e.target.closest(".diet-yt-view-wrap")) handlers2.onCloseViewMenu();
+      if (!e.target.closest("[data-more], .diet-yt-more-menu")) handlers2.onCloseMore?.();
     };
     document.addEventListener("click", onDocClick);
     function render(state2) {
@@ -1045,6 +1150,8 @@
       renderBulk(bulkEl, state2);
       renderSurface(surfaceEl, state2);
       renderSheet(bodyEl, state2, handlers2);
+      renderMoreMenu(root2, bodyEl, state2);
+      renderPlaylistPicker(bodyEl, state2, handlers2);
       renderToast(bodyEl, state2);
     }
     function destroy() {
@@ -1116,11 +1223,15 @@
   function metaLine(video) {
     return [video.channelTitle, video.viewCountText, video.publishedText].filter(Boolean).join(" \xB7 ");
   }
+  function moreButton(video, state2) {
+    const open = state2.cardMenu?.videoId === video.videoId;
+    return `<button type="button" class="diet-yt-more" data-more="${escapeHtml(video.videoId)}" title="More actions" aria-label="More actions for ${escapeHtml(video.title)}" aria-haspopup="menu" aria-expanded="${open}">${svg(ICONS.more, 20)}</button>`;
+  }
   function cardActions(video, state2) {
     const selected = state2.selected?.has(video.videoId);
     const remove = state2.canRemove ? `<button type="button" class="diet-yt-card-x" data-remove="${escapeHtml(video.videoId)}" title="Remove" aria-label="Remove ${escapeHtml(video.title)}">${svg(ICONS.close, 16)}</button>` : "";
     const check = state2.canRemove ? `<button type="button" class="diet-yt-check" data-toggle="${escapeHtml(video.videoId)}" aria-pressed="${selected}" aria-label="Select">${selected ? svg(ICONS.check, 16) : ""}</button>` : "";
-    return check + remove;
+    return check + remove + moreButton(video, state2);
   }
   function renderSurface(surfaceEl, state2) {
     const density = normalizeIconsDensity(state2.view.density);
@@ -1146,7 +1257,7 @@
           <div>${state2.canRemove ? `<button type="button" class="diet-yt-check" data-toggle="${escapeHtml(video.videoId)}" aria-pressed="${selected}">${selected ? "\u2713" : ""}</button>` : ""}</div>
           <div class="diet-yt-thumb"><img alt="" src="${escapeHtml(video.thumbUrl)}">${video.lengthText ? `<span class="diet-yt-dur">${escapeHtml(video.lengthText)}</span>` : ""}</div>
           <div><div class="diet-yt-row-title">${escapeHtml(video.title)}</div><div class="diet-yt-row-sub">${escapeHtml(metaLine(video))}</div></div>
-          <div class="diet-yt-row-actions">${state2.canRemove ? `<button type="button" class="diet-yt-card-x" data-remove="${escapeHtml(video.videoId)}" aria-label="Remove">\u2715</button>` : ""}</div>
+          <div class="diet-yt-row-actions">${state2.canRemove ? `<button type="button" class="diet-yt-card-x" data-remove="${escapeHtml(video.videoId)}" aria-label="Remove">\u2715</button>` : ""}${moreButton(video, state2)}</div>
         </div>`;
       }).join("")}</div>`;
       return;
@@ -1261,6 +1372,60 @@
     });
     bodyEl.appendChild(node);
     queueMicrotask(() => nameInput.focus());
+  }
+  function renderMoreMenu(root2, bodyEl, state2) {
+    bodyEl.querySelector(".diet-yt-more-menu")?.remove();
+    const videoId = state2.cardMenu?.videoId;
+    if (!videoId) return;
+    const items = moreMenuItems(state2.session.tabId);
+    const menu = el(`<div class="diet-yt-more-menu" role="menu">
+    ${items.map((item) => {
+      const attr = item.id === "save-wl" ? "data-save-wl" : "data-save-playlist";
+      return `<button type="button" class="diet-yt-item" role="menuitem" ${attr}="${escapeHtml(videoId)}">${escapeHtml(item.label)}</button>`;
+    }).join("")}
+  </div>`);
+    bodyEl.appendChild(menu);
+    const btn = root2.querySelector(`[data-more="${CSS.escape(videoId)}"]`);
+    if (!btn) return;
+    const rootRect = root2.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+    const top = btnRect.bottom - rootRect.top + 4;
+    let left = btnRect.right - rootRect.left - 240;
+    left = Math.max(8, Math.min(left, rootRect.width - 248));
+    menu.style.top = `${top}px`;
+    menu.style.left = `${left}px`;
+  }
+  function renderPlaylistPicker(bodyEl, state2, handlers2) {
+    bodyEl.querySelector(".diet-yt-picker")?.remove();
+    const picker = state2.playlistPicker;
+    if (!picker) return;
+    const items = picker.items || [];
+    const node = el(`<div class="diet-yt-sheet-backdrop diet-yt-picker" data-dismiss-picker>
+    <div class="diet-yt-sheet" role="dialog" aria-labelledby="diet-yt-picker-title">
+      <h2 id="diet-yt-picker-title">Save to playlist</h2>
+      ${picker.loading ? `<p class="diet-yt-card-sub">Loading your playlists\u2026</p>` : picker.error ? `<p class="diet-yt-card-sub">${escapeHtml(picker.error)}</p>` : !items.length ? `<p class="diet-yt-card-sub">No playlists found. Watch later is still available from the \u22EE menu.</p>` : `<div class="diet-yt-picker-list">${items.map(
+      (p) => `<button type="button" class="diet-yt-item" data-pick-playlist="${escapeHtml(p.id)}" data-playlist-label="${escapeHtml(p.label)}">${escapeHtml(p.label)}${p.alreadyIn ? `<span class="diet-yt-picker-flag">Saved</span>` : ""}</button>`
+    ).join("")}</div>`}
+      <div class="diet-yt-sheet-actions">
+        <button type="button" class="diet-yt-btn-secondary" data-dismiss-picker>Cancel</button>
+      </div>
+    </div>
+  </div>`);
+    node.addEventListener("click", (e) => {
+      if (e.target === node) handlers2.onClosePlaylistPicker();
+    });
+    node.querySelector("[data-dismiss-picker].diet-yt-btn-secondary")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      handlers2.onClosePlaylistPicker();
+    });
+    node.querySelectorAll("[data-pick-playlist]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handlers2.onPickPlaylist(btn.dataset.pickPlaylist, btn.dataset.playlistLabel);
+      });
+    });
+    bodyEl.appendChild(node);
   }
   function renderToast(bodyEl, state2) {
     bodyEl.querySelector(".diet-yt-toast")?.remove();
@@ -1391,6 +1556,8 @@
     viewMenuOpen: false,
     sheet: null,
     toast: null,
+    cardMenu: null,
+    playlistPicker: null,
     emptyTitle: "Watch later is empty",
     emptyBody: "Save videos for later. This queue is your diet home \u2014 the algorithm stays one click away."
   };
@@ -1409,6 +1576,16 @@
   var snapsReady = Promise.resolve();
   var persistTimers = /* @__PURE__ */ new Map();
   var prefetchScheduled = false;
+  var extensionEnabled = true;
+  async function readEnabled() {
+    if (typeof chrome === "undefined" || !chrome.storage?.local) return true;
+    const got = await chrome.storage.local.get(ENABLED_STORAGE_KEY);
+    return isDietEnabled(got[ENABLED_STORAGE_KEY]);
+  }
+  var enabledReady = readEnabled().then((on) => {
+    extensionEnabled = on;
+    return on;
+  });
   var handlers = {
     onTabClick: (tabId) => applyEvent(NAV_EVENT.CHRONO_TAB, { requestedTabId: tabId }),
     onCreateFeed: () => openSheet("create"),
@@ -1482,7 +1659,33 @@
       state.sheet.sources = state.sheet.sources.filter((s) => s.id !== id);
       paint();
     },
-    onUndo: undoLast
+    onUndo: undoLast,
+    onOpenMore: (videoId) => {
+      state.cardMenu = state.cardMenu?.videoId === videoId ? null : { videoId };
+      state.viewMenuOpen = false;
+      paint();
+    },
+    onCloseMore: () => {
+      if (!state.cardMenu) return;
+      state.cardMenu = null;
+      paint();
+    },
+    onSaveToWatchLater: (videoId) => {
+      void saveVideosToPlaylist([videoId], WATCH_LATER_PLAYLIST_ID, "Watch later");
+    },
+    onOpenPlaylistPicker: (videoId) => {
+      void openPlaylistPicker(videoId);
+    },
+    onPickPlaylist: (playlistId, label) => {
+      const videoId = state.playlistPicker?.videoId;
+      if (!videoId) return;
+      void saveVideosToPlaylist([videoId], playlistId, label);
+    },
+    onClosePlaylistPicker: () => {
+      if (!state.playlistPicker) return;
+      state.playlistPicker = null;
+      paint();
+    }
   };
   function bootApi() {
     return window.__dietYtBoot || {};
@@ -1590,10 +1793,23 @@
     document.documentElement.dataset.dietHydrated = "1";
   }
   function setActive(on) {
+    if (!extensionEnabled) on = false;
     const html = document.documentElement;
     html.classList.toggle("diet-yt-active", on);
     html.dataset.dietRoute = on ? "home" : "other";
     if (root) root.hidden = !on;
+  }
+  function deactivateExtension() {
+    extensionEnabled = false;
+    hideSurface();
+    bootApi().deactivate?.();
+    document.documentElement.classList.remove("diet-yt-active");
+    delete document.documentElement.dataset.dietRoute;
+    const live = document.getElementById("diet-yt-root");
+    if (live) live.remove();
+    root = null;
+    if (shell?.destroy) shell.destroy();
+    shell = null;
   }
   function showSurface() {
     ensureRoot();
@@ -1605,6 +1821,7 @@
     setActive(false);
   }
   function remountIfHome() {
+    if (!shouldInjectSurface({ enabled: extensionEnabled })) return;
     if (remounting) return;
     const path = location.pathname;
     const search = location.search;
@@ -1661,6 +1878,7 @@
     };
   }
   function applyEvent(event, extra = {}) {
+    if (!shouldInjectSurface({ enabled: extensionEnabled })) return;
     if (event === NAV_EVENT.CHRONO_TAB) {
       homeLockUntil = 0;
     } else if (shouldBlockOtherDuringHomeLock({
@@ -1692,6 +1910,8 @@
     }
     state.selected = /* @__PURE__ */ new Set();
     state.viewMenuOpen = false;
+    state.cardMenu = null;
+    state.playlistPicker = null;
     if (event === NAV_EVENT.COLD) sessionViews.clear();
     const saved = getViewForTab(state.prefs, decision.tabId);
     state.savedView = { ...saved };
@@ -1704,6 +1924,7 @@
     loadTab(decision.tabId);
   }
   function forceDietHome(event) {
+    if (!shouldInjectSurface({ enabled: extensionEnabled })) return;
     const next = event === NAV_EVENT.COLD ? NAV_EVENT.COLD : NAV_EVENT.YT_HOME;
     setPendingNav(next === NAV_EVENT.COLD ? "cold" : "yt-home");
     markHomeIntent();
@@ -1873,6 +2094,58 @@
       showToast(friendlyError(err));
       loadTab(state.session.tabId, { force: true });
     }
+  }
+  async function saveVideosToPlaylist(videoIds, playlistId, playlistLabel) {
+    const items = state.rawVideos.filter((v) => videoIds.includes(v.videoId));
+    if (!items.length) return;
+    state.cardMenu = null;
+    state.playlistPicker = null;
+    paint();
+    try {
+      const result = await mainRpc("addToPlaylist", {
+        playlistId: playlistId || WATCH_LATER_PLAYLIST_ID,
+        videoIds: items.map((v) => v.videoId)
+      });
+      const label = playlistDisplayName(playlistId, playlistLabel);
+      showToast(saveToastMessage({ alreadyIn: Boolean(result?.alreadyIn), playlistLabel: label, count: items.length }));
+      if ((playlistId || WATCH_LATER_PLAYLIST_ID) === WATCH_LATER_PLAYLIST_ID) {
+        rememberSavedToWatchLater(items);
+      }
+    } catch (err) {
+      showToast(friendlyError(err));
+    }
+  }
+  function rememberSavedToWatchLater(items) {
+    const key = cacheKey("tab", SYSTEM_TAB.WATCH_LATER);
+    const current = inspectCache(cache, key);
+    if (!current.hit) return;
+    const have = new Set((current.videos || []).map((v) => v.videoId));
+    const next = [...items.filter((v) => !have.has(v.videoId)).map((v) => ({ ...v, playlistId: WATCH_LATER_PLAYLIST_ID })), ...current.videos || []];
+    const stored = putCache(cache, key, next);
+    queueTabSnapshot(SYSTEM_TAB.WATCH_LATER, stored);
+  }
+  async function openPlaylistPicker(videoId) {
+    state.cardMenu = null;
+    state.playlistPicker = { videoId, items: [], loading: true, error: null };
+    paint();
+    try {
+      const library = await mainRpc("listPlaylists", { videoIds: [videoId] });
+      const items = mergeSaveTargets({
+        library: library || [],
+        feedSources: playlistSourcesFromPrefs(state.prefs)
+      });
+      if (state.playlistPicker?.videoId !== videoId) return;
+      state.playlistPicker = { videoId, items, loading: false, error: null };
+    } catch (err) {
+      if (state.playlistPicker?.videoId !== videoId) return;
+      state.playlistPicker = {
+        videoId,
+        items: mergeSaveTargets({ feedSources: playlistSourcesFromPrefs(state.prefs) }),
+        loading: false,
+        error: friendlyError(err)
+      };
+    }
+    paint();
   }
   function filterLocal(videos, removed) {
     const ids = new Set(removed.map((r) => r.videoId));
@@ -2044,6 +2317,7 @@
     return false;
   }
   function interceptYouTubeHome(event) {
+    if (!shouldInjectSurface({ enabled: extensionEnabled })) return;
     if (isModifiedClick(event)) return;
     const insideDiet = pathContainsDietRoot(event);
     const extraNodes = peekNodesUnderDietRoot(event);
@@ -2094,6 +2368,10 @@
     return true;
   }
   function onLocation(pathname, { source, phase, search } = {}) {
+    if (!shouldInjectSurface({ enabled: extensionEnabled })) {
+      hideSurface();
+      return;
+    }
     const next = pathname || location.pathname;
     const nextSearch = search ?? location.search;
     const homeIntent = homeIntentActive();
@@ -2140,6 +2418,7 @@
   }
   function watchDomRemounts() {
     const check = () => {
+      if (!shouldInjectSurface({ enabled: extensionEnabled })) return;
       if (!isDietSurfacePath(location.pathname) && !homeIntentActive()) return;
       const live = document.getElementById("diet-yt-root");
       const painted = live?.querySelector(".diet-yt-chrome");
@@ -2158,8 +2437,23 @@
     }, true);
   }
   snapsReady = hydrateSnapshots();
+  function watchEnabled() {
+    if (typeof chrome === "undefined" || !chrome.storage?.onChanged) return;
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area !== "local" || !changes[ENABLED_STORAGE_KEY]) return;
+      const on = isDietEnabled(changes[ENABLED_STORAGE_KEY].newValue);
+      extensionEnabled = on;
+      if (!on) deactivateExtension();
+      else location.reload();
+    });
+  }
   async function boot() {
     try {
+      await enabledReady;
+      if (!shouldInjectSurface({ enabled: extensionEnabled })) {
+        deactivateExtension();
+        return;
+      }
       await snapsReady;
       ensureRoot();
       if (isDietSurfacePath(location.pathname) || homeIntentActive() || peekPendingNav() === "cold" || isReloadNavigation()) {
@@ -2223,12 +2517,14 @@
     interceptYouTubeHome(event);
   }
   function onYtHomeNavigate(event) {
+    if (!shouldInjectSurface({ enabled: extensionEnabled })) return;
     if (!isYouTubeHomeDestination(event?.detail, location.pathname)) return;
     if (peekPendingNav() === "yt-home" || Date.now() < homeLockUntil || Date.now() - lastExternalGestureAt < 1e3) {
       forceDietHome(NAV_EVENT.YT_HOME);
     }
   }
   function onReloadKey(event) {
+    if (!shouldInjectSurface({ enabled: extensionEnabled })) return;
     const reloadKey = event.key === "F5" || (event.key === "r" || event.key === "R") && (event.metaKey || event.ctrlKey);
     if (!reloadKey) return;
     setPendingNav("cold");
@@ -2300,23 +2596,32 @@
       if (e.key === "Escape") {
         state.viewMenuOpen = false;
         state.sheet = null;
+        state.cardMenu = null;
+        state.playlistPicker = null;
         paint();
       }
     });
   }
+  watchEnabled();
   installChromeHooks();
-  if (isDietSurfacePath(location.pathname) || isReloadNavigation()) {
-    forceDietHome(NAV_EVENT.COLD);
-  }
-  try {
-    if (document.documentElement) boot();
-    else document.addEventListener("DOMContentLoaded", boot, { once: true });
-  } catch (err) {
-    console.warn("[diet-yt] init failed", err);
-    try {
-      document.documentElement.classList.add("diet-yt-active");
-      bootApi().activateHome?.();
-    } catch (_) {
+  enabledReady.then((on) => {
+    if (!on) {
+      deactivateExtension();
+      return;
     }
-  }
+    if (isDietSurfacePath(location.pathname) || isReloadNavigation()) {
+      forceDietHome(NAV_EVENT.COLD);
+    }
+    try {
+      if (document.documentElement) boot();
+      else document.addEventListener("DOMContentLoaded", boot, { once: true });
+    } catch (err) {
+      console.warn("[diet-yt] init failed", err);
+      try {
+        document.documentElement.classList.add("diet-yt-active");
+        bootApi().activateHome?.();
+      } catch (_) {
+      }
+    }
+  });
 })();

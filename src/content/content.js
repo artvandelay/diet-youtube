@@ -3,7 +3,14 @@
  * JS even if the manifest sets "type": "module". Ship the esbuild IIFE
  * (`npm run build` → src/content/content.bundle.js) in the manifest.
  */
-import { SYSTEM_TAB } from "../lib/constants.js";
+import { SYSTEM_TAB, WATCH_LATER_PLAYLIST_ID } from "../lib/constants.js";
+import { ENABLED_STORAGE_KEY, isDietEnabled, shouldInjectSurface } from "../lib/enabled.js";
+import {
+  mergeSaveTargets,
+  playlistDisplayName,
+  playlistSourcesFromPrefs,
+  saveToastMessage,
+} from "../lib/playlist-save.js";
 import {
   HOME_LOCK_MS,
   NAV_EVENT,
@@ -82,6 +89,8 @@ const state = {
   viewMenuOpen: false,
   sheet: null,
   toast: null,
+  cardMenu: null,
+  playlistPicker: null,
   emptyTitle: "Watch later is empty",
   emptyBody: "Save videos for later. This queue is your diet home — the algorithm stays one click away.",
 };
@@ -101,6 +110,18 @@ const sessionViews = new Map();
 let snapsReady = Promise.resolve();
 const persistTimers = new Map();
 let prefetchScheduled = false;
+let extensionEnabled = true;
+
+async function readEnabled() {
+  if (typeof chrome === "undefined" || !chrome.storage?.local) return true;
+  const got = await chrome.storage.local.get(ENABLED_STORAGE_KEY);
+  return isDietEnabled(got[ENABLED_STORAGE_KEY]);
+}
+
+const enabledReady = readEnabled().then((on) => {
+  extensionEnabled = on;
+  return on;
+});
 
 const handlers = {
   onTabClick: (tabId) => applyEvent(NAV_EVENT.CHRONO_TAB, { requestedTabId: tabId }),
@@ -176,6 +197,32 @@ const handlers = {
     paint();
   },
   onUndo: undoLast,
+  onOpenMore: (videoId) => {
+    state.cardMenu = state.cardMenu?.videoId === videoId ? null : { videoId };
+    state.viewMenuOpen = false;
+    paint();
+  },
+  onCloseMore: () => {
+    if (!state.cardMenu) return;
+    state.cardMenu = null;
+    paint();
+  },
+  onSaveToWatchLater: (videoId) => {
+    void saveVideosToPlaylist([videoId], WATCH_LATER_PLAYLIST_ID, "Watch later");
+  },
+  onOpenPlaylistPicker: (videoId) => {
+    void openPlaylistPicker(videoId);
+  },
+  onPickPlaylist: (playlistId, label) => {
+    const videoId = state.playlistPicker?.videoId;
+    if (!videoId) return;
+    void saveVideosToPlaylist([videoId], playlistId, label);
+  },
+  onClosePlaylistPicker: () => {
+    if (!state.playlistPicker) return;
+    state.playlistPicker = null;
+    paint();
+  },
 };
 
 function bootApi() {
@@ -306,10 +353,24 @@ function paint() {
 }
 
 function setActive(on) {
+  if (!extensionEnabled) on = false;
   const html = document.documentElement;
   html.classList.toggle("diet-yt-active", on);
   html.dataset.dietRoute = on ? "home" : "other";
   if (root) root.hidden = !on;
+}
+
+function deactivateExtension() {
+  extensionEnabled = false;
+  hideSurface();
+  bootApi().deactivate?.();
+  document.documentElement.classList.remove("diet-yt-active");
+  delete document.documentElement.dataset.dietRoute;
+  const live = document.getElementById("diet-yt-root");
+  if (live) live.remove();
+  root = null;
+  if (shell?.destroy) shell.destroy();
+  shell = null;
 }
 
 function showSurface() {
@@ -324,6 +385,7 @@ function hideSurface() {
 }
 
 function remountIfHome() {
+  if (!shouldInjectSurface({ enabled: extensionEnabled })) return;
   if (remounting) return;
   const path = location.pathname;
   const search = location.search;
@@ -385,6 +447,7 @@ function emptyCopy(tabId) {
 }
 
 function applyEvent(event, extra = {}) {
+  if (!shouldInjectSurface({ enabled: extensionEnabled })) return;
   if (event === NAV_EVENT.CHRONO_TAB) {
     homeLockUntil = 0;
   } else if (
@@ -420,6 +483,8 @@ function applyEvent(event, extra = {}) {
 
   state.selected = new Set();
   state.viewMenuOpen = false;
+  state.cardMenu = null;
+  state.playlistPicker = null;
   if (event === NAV_EVENT.COLD) sessionViews.clear();
   const saved = getViewForTab(state.prefs, decision.tabId);
   state.savedView = { ...saved };
@@ -433,6 +498,7 @@ function applyEvent(event, extra = {}) {
 }
 
 function forceDietHome(event) {
+  if (!shouldInjectSurface({ enabled: extensionEnabled })) return;
   const next = event === NAV_EVENT.COLD ? NAV_EVENT.COLD : NAV_EVENT.YT_HOME;
   setPendingNav(next === NAV_EVENT.COLD ? "cold" : "yt-home");
   markHomeIntent();
@@ -621,6 +687,61 @@ async function removeVideos(videoIds) {
     showToast(friendlyError(err));
     loadTab(state.session.tabId, { force: true });
   }
+}
+
+async function saveVideosToPlaylist(videoIds, playlistId, playlistLabel) {
+  const items = state.rawVideos.filter((v) => videoIds.includes(v.videoId));
+  if (!items.length) return;
+  state.cardMenu = null;
+  state.playlistPicker = null;
+  paint();
+  try {
+    const result = await mainRpc("addToPlaylist", {
+      playlistId: playlistId || WATCH_LATER_PLAYLIST_ID,
+      videoIds: items.map((v) => v.videoId),
+    });
+    const label = playlistDisplayName(playlistId, playlistLabel);
+    showToast(saveToastMessage({ alreadyIn: Boolean(result?.alreadyIn), playlistLabel: label, count: items.length }));
+    if ((playlistId || WATCH_LATER_PLAYLIST_ID) === WATCH_LATER_PLAYLIST_ID) {
+      rememberSavedToWatchLater(items);
+    }
+  } catch (err) {
+    showToast(friendlyError(err));
+  }
+}
+
+function rememberSavedToWatchLater(items) {
+  const key = cacheKey("tab", SYSTEM_TAB.WATCH_LATER);
+  const current = inspectCache(cache, key);
+  if (!current.hit) return;
+  const have = new Set((current.videos || []).map((v) => v.videoId));
+  const next = [...items.filter((v) => !have.has(v.videoId)).map((v) => ({ ...v, playlistId: WATCH_LATER_PLAYLIST_ID })), ...(current.videos || [])];
+  const stored = putCache(cache, key, next);
+  queueTabSnapshot(SYSTEM_TAB.WATCH_LATER, stored);
+}
+
+async function openPlaylistPicker(videoId) {
+  state.cardMenu = null;
+  state.playlistPicker = { videoId, items: [], loading: true, error: null };
+  paint();
+  try {
+    const library = await mainRpc("listPlaylists", { videoIds: [videoId] });
+    const items = mergeSaveTargets({
+      library: library || [],
+      feedSources: playlistSourcesFromPrefs(state.prefs),
+    });
+    if (state.playlistPicker?.videoId !== videoId) return;
+    state.playlistPicker = { videoId, items, loading: false, error: null };
+  } catch (err) {
+    if (state.playlistPicker?.videoId !== videoId) return;
+    state.playlistPicker = {
+      videoId,
+      items: mergeSaveTargets({ feedSources: playlistSourcesFromPrefs(state.prefs) }),
+      loading: false,
+      error: friendlyError(err),
+    };
+  }
+  paint();
 }
 
 function filterLocal(videos, removed) {
@@ -813,6 +934,7 @@ function coordsHitHomeChrome(event) {
 }
 
 function interceptYouTubeHome(event) {
+  if (!shouldInjectSurface({ enabled: extensionEnabled })) return;
   if (isModifiedClick(event)) return;
   const insideDiet = pathContainsDietRoot(event);
   const extraNodes = peekNodesUnderDietRoot(event);
@@ -881,6 +1003,10 @@ function recoverNativeWatchLater(pathname, search, event) {
 }
 
 function onLocation(pathname, { source, phase, search } = {}) {
+  if (!shouldInjectSurface({ enabled: extensionEnabled })) {
+    hideSurface();
+    return;
+  }
   const next = pathname || location.pathname;
   const nextSearch = search ?? location.search;
   const homeIntent = homeIntentActive();
@@ -935,6 +1061,7 @@ function onLocation(pathname, { source, phase, search } = {}) {
 
 function watchDomRemounts() {
   const check = () => {
+    if (!shouldInjectSurface({ enabled: extensionEnabled })) return;
     if (!isDietSurfacePath(location.pathname) && !homeIntentActive()) return;
     const live = document.getElementById("diet-yt-root");
     const painted = live?.querySelector(".diet-yt-chrome");
@@ -955,8 +1082,24 @@ function watchDomRemounts() {
 
 snapsReady = hydrateSnapshots();
 
+function watchEnabled() {
+  if (typeof chrome === "undefined" || !chrome.storage?.onChanged) return;
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== "local" || !changes[ENABLED_STORAGE_KEY]) return;
+    const on = isDietEnabled(changes[ENABLED_STORAGE_KEY].newValue);
+    extensionEnabled = on;
+    if (!on) deactivateExtension();
+    else location.reload();
+  });
+}
+
 async function boot() {
   try {
+    await enabledReady;
+    if (!shouldInjectSurface({ enabled: extensionEnabled })) {
+      deactivateExtension();
+      return;
+    }
     await snapsReady;
     ensureRoot();
     if (
@@ -1034,6 +1177,7 @@ function onExternalPointerDown(event) {
 }
 
 function onYtHomeNavigate(event) {
+  if (!shouldInjectSurface({ enabled: extensionEnabled })) return;
   if (!isYouTubeHomeDestination(event?.detail, location.pathname)) return;
   if (
     peekPendingNav() === "yt-home" ||
@@ -1045,6 +1189,7 @@ function onYtHomeNavigate(event) {
 }
 
 function onReloadKey(event) {
+  if (!shouldInjectSurface({ enabled: extensionEnabled })) return;
   const reloadKey =
     event.key === "F5" || ((event.key === "r" || event.key === "R") && (event.metaKey || event.ctrlKey));
   if (!reloadKey) return;
@@ -1122,25 +1267,34 @@ function installChromeHooks() {
     if (e.key === "Escape") {
       state.viewMenuOpen = false;
       state.sheet = null;
+      state.cardMenu = null;
+      state.playlistPicker = null;
       paint();
     }
   });
 }
 
+watchEnabled();
 installChromeHooks();
-if (isDietSurfacePath(location.pathname) || isReloadNavigation()) {
-  forceDietHome(NAV_EVENT.COLD);
-}
 
-try {
-  if (document.documentElement) boot();
-  else document.addEventListener("DOMContentLoaded", boot, { once: true });
-} catch (err) {
-  console.warn("[diet-yt] init failed", err);
-  try {
-    document.documentElement.classList.add("diet-yt-active");
-    bootApi().activateHome?.();
-  } catch (_) {
-    /* last resort: cloak.css + boot skeleton */
+enabledReady.then((on) => {
+  if (!on) {
+    deactivateExtension();
+    return;
   }
-}
+  if (isDietSurfacePath(location.pathname) || isReloadNavigation()) {
+    forceDietHome(NAV_EVENT.COLD);
+  }
+  try {
+    if (document.documentElement) boot();
+    else document.addEventListener("DOMContentLoaded", boot, { once: true });
+  } catch (err) {
+    console.warn("[diet-yt] init failed", err);
+    try {
+      document.documentElement.classList.add("diet-yt-active");
+      bootApi().activateHome?.();
+    } catch (_) {
+      /* last resort: cloak.css + boot skeleton */
+    }
+  }
+});

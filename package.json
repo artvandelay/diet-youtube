@@ -1,6 +1,6 @@
 {
   "name": "diet-youtube",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "description": "Chrome MV3 extension that replaces YouTube Home with a queue-first Diet-Youtube reading surface.",
