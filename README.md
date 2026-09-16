@@ -10,11 +10,7 @@ Nothing leaves your browser. Preferences stay in `chrome.storage`. Playlist read
 
 ## Screenshots
 
-Watch later opens as Icons by default — your queue, not For you:
-
-![Watch later in Icons layout](docs/screenshots/01-watch-later-icons.jpg)
-
-Subscriptions as a chronological Icons grid:
+Subscriptions as a chronological Icons grid (queue-first chrome above):
 
 ![Subscriptions in Icons layout](docs/screenshots/02-subscriptions-icons.jpg)
 
