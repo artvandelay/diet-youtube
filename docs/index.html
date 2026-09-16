@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diet-Youtube — queue-first YouTube home</title>
+<meta name="description" content="Chrome extension that replaces YouTube’s impulse Home with a queue-first reading surface. Watch later first; the algorithm stays one click away.">
+<meta property="og:title" content="Diet-Youtube">
+<meta property="og:description" content="Replace YouTube’s impulse Home with a queue-first reading surface.">
+<meta property="og:image" content="https://artvandelay.github.io/diet-youtube/screenshots/01-watch-later-icons.jpg">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://artvandelay.github.io/diet-youtube/">
+<style>
+  :root {
+    --bg: #0b0d10;
+    --fg: #e6e6e6;
+    --muted: #8a8f98;
+    --accent: #7cc4ff;
+    --card: #14171c;
+    --border: #232830;
+    --btn: #f2f2f2;
+    --btn-fg: #111;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #fafafa; --fg: #16181d; --muted: #5b6470; --accent: #0366d6;
+      --card: #fff; --border: #e5e7eb; --btn: #16181d; --btn-fg: #fff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg); color: var(--fg);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+  main { max-width: 880px; margin: 0 auto; padding: 56px 24px 96px; }
+  header h1 {
+    font-size: 34px; margin: 0 0 10px; font-weight: 650;
+    letter-spacing: -0.02em;
+  }
+  .tagline { color: var(--muted); font-size: 18px; margin: 0 0 28px; max-width: 40rem; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 48px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--btn); color: var(--btn-fg);
+    text-decoration: none; font-weight: 600; font-size: 14px;
+    padding: 10px 16px; border-radius: 999px;
+  }
+  .btn.secondary {
+    background: transparent; color: var(--fg);
+    border: 1px solid var(--border);
+  }
+  .btn:hover { opacity: 0.92; }
+  h2 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--muted); font-weight: 600; margin: 40px 0 16px;
+  }
+  .shots { display: grid; gap: 20px; }
+  figure {
+    margin: 0; background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden;
+  }
+  figure img { display: block; width: 100%; height: auto; }
+  figcaption {
+    padding: 12px 16px; color: var(--muted); font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 20px;
+  }
+  ol.install { margin: 0; padding-left: 1.2rem; }
+  ol.install li { margin: 0.45rem 0; }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.92em; background: rgba(127,127,127,0.12);
+    padding: 0.1em 0.35em; border-radius: 4px;
+  }
+  ul.features { margin: 0; padding-left: 1.2rem; color: var(--fg); }
+  ul.features li { margin: 0.4rem 0; }
+  a { color: var(--accent); }
+  footer { margin-top: 64px; color: var(--muted); font-size: 13px; }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Diet-Youtube</h1>
+    <p class="tagline">
+      A Chrome extension that replaces YouTube’s impulse Home with a queue-first reading surface.
+      Watch later first. The algorithm stays one click away.
+    </p>
+    <div class="actions">
+      <a class="btn" href="https://github.com/artvandelay/diet-youtube">Get the source on GitHub</a>
+      <a class="btn secondary" href="https://github.com/artvandelay/diet-youtube#install-load-unpacked">Install guide</a>
+    </div>
+  </header>
+
+  <h2>How it looks</h2>
+  <div class="shots">
+    <figure>
+      <img src="screenshots/01-watch-later-icons.jpg" alt="Watch later home in Icons layout" width="1600" height="889" loading="eager">
+      <figcaption>Cold start, logo, and Home open <strong>Watch later</strong> — not For you.</figcaption>
+    </figure>
+    <figure>
+      <img src="screenshots/02-subscriptions-icons.jpg" alt="Subscriptions chronological Icons grid" width="1422" height="728" loading="lazy">
+      <figcaption>Subscriptions stay chronological. List layout is one click away.</figcaption>
+    </figure>
+    <figure>
+      <img src="screenshots/03-view-menu-density.jpg" alt="View menu with sort, posted within, and Icons density" width="1422" height="728" loading="lazy">
+      <figcaption>Sort, posted-within, and Icons density apply to this tab now. Save as default is separate.</figcaption>
+    </figure>
+  </div>
+
+  <h2>Install (Load unpacked)</h2>
+  <div class="card">
+    <ol class="install">
+      <li>Clone or download <a href="https://github.com/artvandelay/diet-youtube">artvandelay/diet-youtube</a>.</li>
+      <li>Open Chrome → <code>chrome://extensions</code>.</li>
+      <li>Turn on <strong>Developer mode</strong>.</li>
+      <li>Click <strong>Load unpacked</strong> and select the folder that contains <code>manifest.json</code>.</li>
+      <li>Open <a href="https://www.youtube.com">youtube.com</a> while signed in.</li>
+    </ol>
+  </div>
+
+  <h2>What you get</h2>
+  <div class="card">
+    <ul class="features">
+      <li>Queue-first home: Watch later (or your chosen default playlist).</li>
+      <li>Feed only after an explicit tab click — one extra click from impulse.</li>
+      <li>Chronological Subscriptions plus custom channel/playlist feeds.</li>
+      <li>Icons + List layouts; Comfortable / Default / Dense Icons density.</li>
+      <li>Cache-first tab switches with background refresh.</li>
+      <li>Runs only in your browser — no Diet-Youtube backend.</li>
+    </ul>
+  </div>
+
+  <footer>
+    <p>
+      By <a href="https://github.com/artvandelay">artvandelay</a> ·
+      <a href="https://github.com/artvandelay/diet-youtube">source</a> ·
+      MIT ·
+      <a href="https://artvandelay.github.io/">all projects</a>
+    </p>
+  </footer>
+</main>
+</body>
+</html>
