@@ -22,18 +22,50 @@ View menu: sort, posted-within, Icons density, and Save as default (per feed). S
 
 ![View menu with density controls](docs/screenshots/03-view-menu-density.jpg)
 
-## Install (Load unpacked)
+## Install (for everyone — no coding)
 
-1. Clone this repo (or download the ZIP from GitHub → **Code** → **Download ZIP** and unzip).
-2. Open Chrome → `chrome://extensions`.
+You do **not** need to know how to code. This installs Diet-Youtube as a Chrome extension from a zip.
+
+### 1) Download
+
+1. Open the latest release: [Releases](https://github.com/artvandelay/diet-youtube/releases/latest)
+2. Download **`diet-youtube-v1.2.0.zip`** (under Assets).
+3. Unzip it. You should get a folder that contains a file named `manifest.json`.
+
+Keep that folder somewhere easy to find (for example Desktop or Downloads).
+
+### 2) Load it in Chrome
+
+1. Open **Google Chrome**.
+2. In the address bar, go to: `chrome://extensions`
 3. Turn on **Developer mode** (top right).
-4. Click **Load unpacked**.
-5. Select **this repository folder** (the one that contains `manifest.json`).
+4. Click **Load unpacked** (top left).
+5. Select the **unzipped folder** — the one that contains `manifest.json` (not the zip file itself).
 6. Open [youtube.com](https://www.youtube.com) while signed in.
 
-You should land on **Watch later**, even if that queue is empty. YouTube’s For you grid stays behind the Diet-Youtube chrome.
+You should land on **Watch later** inside Diet-Youtube. Click the Diet-Youtube puzzle/toolbar icon anytime to turn it **On** or **Off**.
 
-After updates, click **Reload** on the extension card at `chrome://extensions`.
+### 3) After an update
+
+1. Download the new zip from Releases and unzip it (replace the old folder, or use a new folder).
+2. Go to `chrome://extensions`.
+3. Find **Diet-Youtube** and click the refresh/reload icon.
+   Or remove the old one and **Load unpacked** again on the new folder.
+
+## Uninstall / remove
+
+1. Open `chrome://extensions`.
+2. Find **Diet-Youtube**.
+3. Click **Remove**.
+4. Confirm.
+
+YouTube goes back to normal. You can also delete the unzipped folder from your computer if you want.
+
+Optional: click the Diet-Youtube toolbar icon and turn it **Off** if you only want a break without uninstalling.
+
+## Install from source (optional, for developers)
+
+Clone this repo, then **Load unpacked** on the repo folder (the one with `manifest.json`). After code changes: `npm test` rebuilds the content bundle.
 
 ## What you get
 
