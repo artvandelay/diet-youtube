@@ -24,44 +24,71 @@ View menu: sort, posted-within, Icons density, and Save as default (per feed). S
 
 ## Install (for everyone — no coding)
 
-You do **not** need to know how to code. This installs Diet-Youtube as a Chrome extension from a zip.
+You do **not** need to know how to code. This installs Diet-Youtube the same way many Chrome extensions are installed before they are in the Chrome Web Store: download a zip, unzip it, then point Chrome at that folder.
 
-### 1) Download
+### 1) Download the zip
 
-1. Open the latest release: [Releases](https://github.com/artvandelay/diet-youtube/releases/latest)
-2. Download **`diet-youtube-v1.2.0.zip`** (under Assets).
-3. Unzip it. You should get a folder that contains a file named `manifest.json`.
+1. Open this page in your browser: [Diet-Youtube releases](https://github.com/artvandelay/diet-youtube/releases/latest)
+2. Scroll down to **Assets**.
+3. Click **`diet-youtube-v1.2.0.zip`** to download it.
 
-Keep that folder somewhere easy to find (for example Desktop or Downloads).
+On a Mac, the file usually lands in your **Downloads** folder as:
 
-### 2) Load it in Chrome
+`Downloads/diet-youtube-v1.2.0.zip`
 
-1. Open **Google Chrome**.
-2. In the address bar, go to: `chrome://extensions`
-3. Turn on **Developer mode** (top right).
-4. Click **Load unpacked** (top left).
-5. Select the **unzipped folder** — the one that contains `manifest.json` (not the zip file itself).
-6. Open [youtube.com](https://www.youtube.com) while signed in.
+On Windows it is often the same idea: the **Downloads** folder, with that same filename.
 
-You should land on **Watch later** inside Diet-Youtube. Click the Diet-Youtube puzzle/toolbar icon anytime to turn it **On** or **Off**.
+### 2) Unzip it (this creates the folder Chrome needs)
 
-### 3) After an update
+1. Find `diet-youtube-v1.2.0.zip` in Downloads.
+2. Unzip it:
+   - **Mac:** double-click the zip.
+   - **Windows:** right-click the zip → **Extract All…** → Extract.
+3. After unzipping, you should see a **folder** named something like:
 
-1. Download the new zip from Releases and unzip it (replace the old folder, or use a new folder).
-2. Go to `chrome://extensions`.
-3. Find **Diet-Youtube** and click the refresh/reload icon.
-   Or remove the old one and **Load unpacked** again on the new folder.
+`Downloads/diet-youtube-v1.2.0/`
+
+Inside that folder you must see a file named **`manifest.json`**. That folder is the one Chrome will load. Do **not** pick the `.zip` file itself.
+
+If unzipping created an extra nested folder (for example `Downloads/diet-youtube-v1.2.0/diet-youtube-v1.2.0/`), open folders until you see `manifest.json`, and use **that** inner folder in the next step.
+
+### 3) Load it in Chrome
+
+1. Open **Google Chrome** (not Safari, not Edge unless you know Edge’s extension page).
+2. Click the address bar at the top, type exactly this, and press Enter:
+
+`chrome://extensions`
+
+3. In the top-right corner of that page, turn **Developer mode** **On** (it looks like a switch).
+4. In the top-left area, click **Load unpacked**.
+5. In the file picker, go to your Downloads folder and select the folder:
+
+`diet-youtube-v1.2.0`
+
+(the folder that contains `manifest.json`). Then confirm / Open.
+6. You should now see **Diet-Youtube** listed on the extensions page.
+7. Open a new tab and go to [youtube.com](https://www.youtube.com) while signed into YouTube.
+
+You should land on **Watch later** inside Diet-Youtube instead of the normal YouTube Home impulse feed.
+
+Optional: pin the extension. Click the puzzle-piece icon in Chrome’s toolbar, find Diet-Youtube, and click the pin. Then you can click that icon anytime to turn Diet-Youtube **On** or **Off** without uninstalling.
+
+### 4) After an update (new version later)
+
+1. Download the newer zip from Releases and unzip it (for example `diet-youtube-v1.3.0`).
+2. Go back to `chrome://extensions`.
+3. Either click the circular **reload** icon on the Diet-Youtube card (if you replaced files in the same folder), **or** Remove the old one and **Load unpacked** again on the new folder.
 
 ## Uninstall / remove
 
-1. Open `chrome://extensions`.
-2. Find **Diet-Youtube**.
+1. Open Chrome and go to `chrome://extensions`.
+2. Find **Diet-Youtube** in the list.
 3. Click **Remove**.
-4. Confirm.
+4. Confirm when Chrome asks.
 
-YouTube goes back to normal. You can also delete the unzipped folder from your computer if you want.
+YouTube goes back to its normal homepage. You can also delete the unzipped folder from Downloads (for example delete `Downloads/diet-youtube-v1.2.0`) and the zip file if you no longer want them on your computer.
 
-Optional: click the Diet-Youtube toolbar icon and turn it **Off** if you only want a break without uninstalling.
+If you only want a temporary break: click the Diet-Youtube toolbar icon and turn it **Off**. That leaves it installed but inactive.
 
 ## Install from source (optional, for developers)
 
