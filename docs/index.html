@@ -185,7 +185,7 @@
     </div>
     <div class="actions">
       <a class="btn" href="https://github.com/artvandelay/diet-youtube/releases/latest">Download the release zip</a>
-      <a class="btn secondary" href="https://github.com/artvandelay/diet-youtube#install-for-everyone--no-coding">Install guide</a>
+      <a class="btn secondary" href="#install">Install steps</a>
     </div>
   </header>
 
@@ -206,29 +206,29 @@
   </div>
 
   <div class="grid-2">
-    <div>
-      <h2>Install (no coding)</h2>
+    <div id="install">
+      <h2>How to install (no coding)</h2>
       <div class="card install">
-        <p>You do not need to know how to code. Download a zip, unzip it, then point Chrome at that folder.</p>
+        <p>You do not need to clone this repo or know how to code. Download one zip, unzip it, then point Chrome at that folder.</p>
         <ol class="install">
-          <li>Open <a href="https://github.com/artvandelay/diet-youtube/releases/latest">Releases</a>, scroll to <strong>Assets</strong>, and download <strong>diet-youtube-v1.2.0.zip</strong>. On a Mac it usually appears as <code>Downloads/diet-youtube-v1.2.0.zip</code>.</li>
-          <li>Unzip it (Mac: double-click the zip; Windows: right-click → Extract All). You should now have a folder like <code>Downloads/diet-youtube-v1.2.0/</code>.</li>
-          <li>Open that folder and confirm you see a file named <code>manifest.json</code>. That folder is what Chrome needs — not the <code>.zip</code> file.</li>
-          <li>Open <strong>Google Chrome</strong>.</li>
-          <li>In the address bar, type <code>chrome://extensions</code> and press Enter.</li>
-          <li>Turn on <strong>Developer mode</strong> (switch in the top right).</li>
+          <li>Open <a href="https://github.com/artvandelay/diet-youtube/releases/latest">Releases</a>, scroll to <strong>Assets</strong>, and download <strong>diet-youtube-v1.2.0.zip</strong> only — not “Source code (zip)”.</li>
+          <li>Typical location: <code>/Users/YOURNAME/Downloads/diet-youtube-v1.2.0.zip</code> on a Mac, or <code>C:\Users\YOURNAME\Downloads\diet-youtube-v1.2.0.zip</code> on Windows.</li>
+          <li>Unzip it (Mac: double-click; Windows: right-click → Extract All). You get a folder <code>diet-youtube-v1.2.0</code> next to the zip.</li>
+          <li>Open that folder and confirm you see <code>manifest.json</code> inside it. That folder is what Chrome needs — not the <code>.zip</code> file. If you see a nested double folder, use the inner one that contains <code>manifest.json</code>.</li>
+          <li>Open <strong>Google Chrome</strong>. In the address bar type <code>chrome://extensions</code> and press Enter.</li>
+          <li>Turn on <strong>Developer mode</strong> (top right).</li>
           <li>Click <strong>Load unpacked</strong> (top left).</li>
-          <li>In the file picker, go to Downloads, select the <code>diet-youtube-v1.2.0</code> folder, and confirm.</li>
-          <li>Open <a href="https://www.youtube.com">youtube.com</a> while signed in. You should land on Watch later inside Diet-Youtube.</li>
+          <li>Select the <code>diet-youtube-v1.2.0</code> folder in Downloads, then Open.</li>
+          <li>Go to <a href="https://www.youtube.com">youtube.com</a> while signed in. You should land on <strong>Watch later</strong> inside Diet-Youtube.</li>
         </ol>
-        <p style="margin-top:1rem;opacity:.9">Need a break? Pin the Diet-Youtube icon (puzzle piece in Chrome’s toolbar), click it, and turn it <strong>Off</strong>. No uninstall needed.</p>
-        <h3 style="margin:1.25rem 0 .5rem;font-size:1.05rem">Uninstall / remove</h3>
+        <p style="margin-top:1rem;opacity:.9">Need a break? Pin the Diet-Youtube toolbar icon and turn it <strong>Off</strong> — no uninstall needed. Longer steps and a troubleshooting table: <a href="https://github.com/artvandelay/diet-youtube#how-to-install-no-coding">README install guide</a>.</p>
+        <h3 style="margin:1.25rem 0 .5rem;font-size:1.05rem">How to uninstall / remove</h3>
         <ol class="install">
-          <li>Open <code>chrome://extensions</code> again.</li>
-          <li>Find <strong>Diet-Youtube</strong> in the list.</li>
+          <li>Open <code>chrome://extensions</code>.</li>
+          <li>Find <strong>Diet-Youtube</strong>.</li>
           <li>Click <strong>Remove</strong>, then confirm.</li>
         </ol>
-        <p style="margin-top:.75rem;opacity:.85">YouTube goes back to normal. You can also delete <code>Downloads/diet-youtube-v1.2.0</code> and the zip from your computer if you want.</p>
+        <p style="margin-top:.75rem;opacity:.85">YouTube goes back to normal. You can delete the <code>diet-youtube-v1.2.0</code> folder and zip from Downloads afterward.</p>
       </div>
     </div>
     <div>

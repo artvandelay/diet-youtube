@@ -4,95 +4,160 @@
 
 Watch later is the diet home. The algorithmic Feed stays one extra click away. Subscriptions stay chronological. Custom feeds are named subsets of channels and playlists.
 
-Nothing leaves your browser. Preferences stay in `chrome.storage`. Playlist reads and Watch later edits use YouTube’s own page session (Innertube) — there is no Diet-Youtube backend.
+Nothing leaves your browser. Preferences stay in Chrome storage. There is no Diet-Youtube server.
 
-**Author:** [artvandelay](https://github.com/artvandelay) · **Version:** 1.2.0 · **License:** MIT
+**Author:** [artvandelay](https://github.com/artvandelay) · **Version:** 1.2.0 · **License:** MIT  
+**Live page:** [artvandelay.github.io/diet-youtube](https://artvandelay.github.io/diet-youtube/) · **Download:** [latest release zip](https://github.com/artvandelay/diet-youtube/releases/latest)
 
-## Screenshots
+---
 
-Watch later opens as Icons by default — your queue, not For you:
+## How to install (no coding)
 
-![Watch later in Icons layout](docs/screenshots/01-watch-later-icons.jpg)
+Most people arrive on **this page** (the GitHub home for the project). You do **not** need to clone the repository or know how to code. You only need to:
 
-Subscriptions as a chronological Icons grid:
+1. Download one zip file from Releases  
+2. Unzip it into a normal folder on your computer  
+3. Tell Chrome to “Load unpacked” and point it at that folder  
 
-![Subscriptions in Icons layout](docs/screenshots/02-subscriptions-icons.jpg)
+Chrome will show a **Developer mode** warning. That is normal for any extension installed this way (it is not yet on the Chrome Web Store).
 
-View menu: sort, posted-within, Icons density, and Save as default (per feed). Session changes apply immediately; only Save writes prefs:
+### Step 1 — Download the release zip (not the source code)
 
-![View menu with density controls](docs/screenshots/03-view-menu-density.jpg)
+1. Open the latest release page:  
+   **[https://github.com/artvandelay/diet-youtube/releases/latest](https://github.com/artvandelay/diet-youtube/releases/latest)**
+2. Scroll down until you see **Assets**.
+3. Click the file named exactly:
 
-## Install (for everyone — no coding)
+   **`diet-youtube-v1.2.0.zip`**
 
-You do **not** need to know how to code. This installs Diet-Youtube the same way many Chrome extensions are installed before they are in the Chrome Web Store: download a zip, unzip it, then point Chrome at that folder.
+**Important:** Do **not** download the files named **“Source code (zip)”** or **“Source code (tar.gz)”**. Those are for developers. Everyday install uses only the Asset named `diet-youtube-v1.2.0.zip`.
 
-### 1) Download the zip
+#### Where the file goes (concrete examples)
 
-1. Open this page in your browser: [Diet-Youtube releases](https://github.com/artvandelay/diet-youtube/releases/latest)
-2. Scroll down to **Assets**.
-3. Click **`diet-youtube-v1.2.0.zip`** to download it.
+After the download finishes:
 
-On a Mac, the file usually lands in your **Downloads** folder as:
+| Computer | Typical location of the zip |
+| --- | --- |
+| **Mac** | `/Users/YOURNAME/Downloads/diet-youtube-v1.2.0.zip`  (Finder → Downloads) |
+| **Windows** | `C:\Users\YOURNAME\Downloads\diet-youtube-v1.2.0.zip` |
 
-`Downloads/diet-youtube-v1.2.0.zip`
+Replace `YOURNAME` with your login name. If your browser asked where to save the file, use that folder instead of Downloads.
 
-On Windows it is often the same idea: the **Downloads** folder, with that same filename.
+### Step 2 — Unzip it so you get a folder
 
-### 2) Unzip it (this creates the folder Chrome needs)
+Chrome cannot load the `.zip` file itself. You must unzip it first so you have a **folder**.
 
-1. Find `diet-youtube-v1.2.0.zip` in Downloads.
-2. Unzip it:
-   - **Mac:** double-click the zip.
-   - **Windows:** right-click the zip → **Extract All…** → Extract.
-3. After unzipping, you should see a **folder** named something like:
+**On a Mac**
 
-`Downloads/diet-youtube-v1.2.0/`
+1. Open **Finder**.
+2. Go to **Downloads**.
+3. Find `diet-youtube-v1.2.0.zip`.
+4. Double-click the zip.
+5. Finder creates a folder next to it named:
 
-Inside that folder you must see a file named **`manifest.json`**. That folder is the one Chrome will load. Do **not** pick the `.zip` file itself.
+   **`diet-youtube-v1.2.0`**
 
-If unzipping created an extra nested folder (for example `Downloads/diet-youtube-v1.2.0/diet-youtube-v1.2.0/`), open folders until you see `manifest.json`, and use **that** inner folder in the next step.
+   Full path example: `/Users/YOURNAME/Downloads/diet-youtube-v1.2.0/`
 
-### 3) Load it in Chrome
+**On Windows**
 
-1. Open **Google Chrome** (not Safari, not Edge unless you know Edge’s extension page).
-2. Click the address bar at the top, type exactly this, and press Enter:
+1. Open **File Explorer**.
+2. Go to **Downloads**.
+3. Right-click `diet-youtube-v1.2.0.zip`.
+4. Choose **Extract All…**, then **Extract**.
+5. You should get a folder named:
 
-`chrome://extensions`
+   **`diet-youtube-v1.2.0`**
 
-3. In the top-right corner of that page, turn **Developer mode** **On** (it looks like a switch).
-4. In the top-left area, click **Load unpacked**.
-5. In the file picker, go to your Downloads folder and select the folder:
+   Full path example: `C:\Users\YOURNAME\Downloads\diet-youtube-v1.2.0\`
 
-`diet-youtube-v1.2.0`
+### Step 3 — Confirm you have the right folder
 
-(the folder that contains `manifest.json`). Then confirm / Open.
-6. You should now see **Diet-Youtube** listed on the extensions page.
-7. Open a new tab and go to [youtube.com](https://www.youtube.com) while signed into YouTube.
+Open the folder `diet-youtube-v1.2.0`. Inside it you must see a file named:
 
-You should land on **Watch later** inside Diet-Youtube instead of the normal YouTube Home impulse feed.
+**`manifest.json`**
 
-Optional: pin the extension. Click the puzzle-piece icon in Chrome’s toolbar, find Diet-Youtube, and click the pin. Then you can click that icon anytime to turn Diet-Youtube **On** or **Off** without uninstalling.
+You should also see folders such as `icons` and `src`.
 
-### 4) After an update (new version later)
+- **Correct:** the folder that **directly contains** `manifest.json`  
+  Example: `…/Downloads/diet-youtube-v1.2.0/manifest.json`
+- **Wrong:** the `.zip` file (`diet-youtube-v1.2.0.zip`)
+- **Wrong:** a parent folder that only contains another folder (if you see `diet-youtube-v1.2.0/diet-youtube-v1.2.0/manifest.json`, use the **inner** folder)
 
-1. Download the newer zip from Releases and unzip it (for example `diet-youtube-v1.3.0`).
-2. Go back to `chrome://extensions`.
-3. Either click the circular **reload** icon on the Diet-Youtube card (if you replaced files in the same folder), **or** Remove the old one and **Load unpacked** again on the new folder.
+Keep this folder somewhere stable (Downloads is fine). Do not delete it while the extension is installed — Chrome reads files from that folder.
 
-## Uninstall / remove
+### Step 4 — Load the folder in Google Chrome
+
+1. Open **Google Chrome** (Safari cannot install this the same way).
+2. Click once in Chrome’s address bar at the top.
+3. Type this exactly and press Enter:
+
+   `chrome://extensions`
+
+4. Look at the **top right** of that page. Turn **Developer mode** **On** (the switch should look enabled).
+5. After Developer mode is on, look at the **top left**. Click the button **Load unpacked**.
+6. A file picker opens. Go to **Downloads**, click once on the folder **`diet-youtube-v1.2.0`**, then click **Open** / **Select**.
+   - Select the **folder**, not a file inside it, and not the zip.
+7. Chrome should now list an extension card named **Diet-Youtube**.
+
+### Step 5 — Open YouTube and check that it worked
+
+1. Open a new tab.
+2. Go to [https://www.youtube.com](https://www.youtube.com) while signed into your YouTube account.
+3. You should see Diet-Youtube’s tabs (Watch later, Subscriptions, Feed, and so on) instead of the usual For-you Home.
+4. Cold start / logo / Home should open **Watch later** first.
+
+**Optional but useful:** click the puzzle-piece icon in Chrome’s toolbar → find **Diet-Youtube** → pin it. Then you can click that icon anytime and turn the extension **On** or **Off** without uninstalling.
+
+### If something goes wrong
+
+| What you see | What to try |
+| --- | --- |
+| No **Load unpacked** button | Turn **Developer mode** On (top right of `chrome://extensions`). |
+| Chrome says it can’t load the extension / no manifest | You selected the wrong folder or still selected the zip. Open the folder and confirm `manifest.json` is directly inside it, then Load unpacked again. |
+| You downloaded something that looks like the whole GitHub repo | You probably grabbed **Source code (zip)**. Delete that, go back to Releases → Assets → download **`diet-youtube-v1.2.0.zip`** only. |
+| Extension is listed but YouTube looks normal | Click the Diet-Youtube toolbar icon and make sure it is **On**, then refresh youtube.com. |
+| Chrome warns about developer extensions when you restart | Expected for Load unpacked. Choose to keep the extension if you still want it. |
+
+### After a new version is published
+
+1. Download the newer zip from [Releases](https://github.com/artvandelay/diet-youtube/releases/latest) and unzip it (for example `diet-youtube-v1.3.0`).
+2. Open `chrome://extensions`.
+3. Either remove the old Diet-Youtube card and **Load unpacked** on the new folder, or replace the files inside your existing folder and click the circular **Reload** icon on the Diet-Youtube card.
+
+---
+
+## How to uninstall / remove
 
 1. Open Chrome and go to `chrome://extensions`.
 2. Find **Diet-Youtube** in the list.
 3. Click **Remove**.
 4. Confirm when Chrome asks.
 
-YouTube goes back to its normal homepage. You can also delete the unzipped folder from Downloads (for example delete `Downloads/diet-youtube-v1.2.0`) and the zip file if you no longer want them on your computer.
+YouTube’s normal homepage comes back. You can also delete the folder and zip from your computer, for example:
 
-If you only want a temporary break: click the Diet-Youtube toolbar icon and turn it **Off**. That leaves it installed but inactive.
+- Mac: delete `/Users/YOURNAME/Downloads/diet-youtube-v1.2.0` and `diet-youtube-v1.2.0.zip`
+- Windows: delete `C:\Users\YOURNAME\Downloads\diet-youtube-v1.2.0` and the zip
 
-## Install from source (optional, for developers)
+**Pause without uninstalling:** pin the Diet-Youtube icon, open it, and turn **Off**. The extension stays installed but YouTube behaves normally until you turn it On again.
 
-Clone this repo, then **Load unpacked** on the repo folder (the one with `manifest.json`). After code changes: `npm test` rebuilds the content bundle.
+---
+
+## Screenshots
+
+Subscriptions as a chronological Icons grid:
+
+![Subscriptions in Icons layout](docs/screenshots/02-subscriptions-icons.jpg)
+
+Create a **new feed** — name it and add channels or playlists:
+
+![New custom feed sheet](docs/screenshots/04-custom-feed.jpg)
+
+View menu: sort, posted-within, Icons density, and Save as default (per feed):
+
+![View menu with density controls](docs/screenshots/03-view-menu-density.jpg)
+
+---
 
 ## What you get
 
@@ -111,14 +176,16 @@ Clone this repo, then **Load unpacked** on the repo folder (the one with `manife
 
 Diet-Youtube runs only on YouTube pages in your browser. It does not upload your Watch later or subscriptions list to a Diet-Youtube server. Feeds and view defaults live in `chrome.storage.local`.
 
-## Develop
+## Install from source (optional, for developers)
+
+Clone this repo, then **Load unpacked** on the repo root (the folder that contains `manifest.json`). After code changes:
 
 ```bash
 npm test          # rebuilds the content IIFE, then runs unit tests
 npm run build     # rebuild src/content/content.bundle.js after editing ESM sources
 ```
 
-Chrome Load unpacked injects `content_scripts` as classic scripts, so the isolated world ships as `src/content/content.bundle.js` (IIFE). Edit `src/content/content.js` and its imports, then `npm run build`.
+Chrome Load unpacked injects `content_scripts` as classic scripts, so the isolated world ships as `src/content/content.bundle.js` (IIFE).
 
 ## Out of scope (for now)
 
@@ -126,5 +193,6 @@ Group-by-channel, Dock-style neighbor magnification, and hover-peek.
 
 ## Changelog (short)
 
+- **1.2.0** — YouTube-style ⋮ save to Watch later / playlists; toolbar On/Off; release zip + non-coder install docs.
 - **1.1.0** — Cache-first tabs + prefetch; Icons density; session sort/posted/density vs Save as default.
 - **1.0.x** — Greenfield MV3: queue-first home, Feed sticky policy, List/Icons, custom feeds, Watch later remove.
