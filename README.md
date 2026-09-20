@@ -9,6 +9,8 @@ Nothing leaves your browser. Preferences stay in Chrome storage. There is no Die
 **Author:** [artvandelay](https://github.com/artvandelay) · **Version:** 1.2.0 · **License:** MIT  
 **Live page:** [artvandelay.github.io/diet-youtube](https://artvandelay.github.io/diet-youtube/) · **Download:** [latest release zip](https://github.com/artvandelay/diet-youtube/releases/latest)
 
+A 21-second overview plays on the [live page](https://artvandelay.github.io/diet-youtube/#watch) (GitHub’s README does not play the video inline).
+
 ---
 
 ## How to install (no coding)
@@ -144,6 +146,10 @@ YouTube’s normal homepage comes back. You can also delete the folder and zip f
 ---
 
 ## Screenshots
+
+[![Watch later is home](docs/video/brag.jpg)](https://artvandelay.github.io/diet-youtube/#watch)
+
+21-second overview — tap the poster or open the [live page](https://artvandelay.github.io/diet-youtube/#watch) to play it.
 
 Subscriptions as a chronological Icons grid:
 

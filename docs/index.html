@@ -121,7 +121,8 @@
     border-color: color-mix(in srgb, var(--accent-2) 35%, var(--border));
     transform: translateY(-2px);
   }
-  figure img { display: block; width: 100%; height: auto; }
+  figure img,
+  figure video { display: block; width: 100%; height: auto; background: #0f0f0f; }
   figcaption {
     padding: 13px 16px; color: var(--muted); font-size: 13px;
     border-top: 1px solid var(--border);
@@ -185,9 +186,27 @@
     </div>
     <div class="actions">
       <a class="btn" href="https://github.com/artvandelay/diet-youtube/releases/latest">Download the release zip</a>
+      <a class="btn secondary" href="#watch">Watch the 21s overview</a>
       <a class="btn secondary" href="#install">Install steps</a>
     </div>
   </header>
+
+  <h2 id="watch">Watch</h2>
+  <div class="shots">
+    <figure>
+      <video
+        controls
+        playsinline
+        preload="metadata"
+        poster="video/brag.jpg"
+        width="1920"
+        height="1080"
+      >
+        <source src="video/brag.mp4" type="video/mp4">
+      </video>
+      <figcaption>Watch later is home. You never just watch a video — you watch from the queue.</figcaption>
+    </figure>
+  </div>
 
   <h2>How it looks</h2>
   <div class="shots">

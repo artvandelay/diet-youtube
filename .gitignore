@@ -7,3 +7,4 @@ dist/
 *.zip
 .env
 .env.*
+brag-output/
