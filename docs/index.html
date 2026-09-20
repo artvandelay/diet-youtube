@@ -83,7 +83,8 @@
   .chip.r { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); color: color-mix(in srgb, var(--accent) 80%, var(--fg)); }
   .chip.b { border-color: color-mix(in srgb, var(--accent-2) 40%, var(--border)); color: color-mix(in srgb, var(--accent-2) 85%, var(--fg)); }
   .chip.g { border-color: color-mix(in srgb, var(--accent-3) 40%, var(--border)); color: color-mix(in srgb, var(--accent-3) 70%, var(--fg)); }
-  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 52px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+  .actions-note { margin: 0 0 52px; font-size: 13px; color: var(--muted); }
   .btn {
     display: inline-flex; align-items: center; gap: 8px;
     background: var(--btn); color: var(--btn-fg);
@@ -185,10 +186,11 @@
       <span class="chip g">No backend</span>
     </div>
     <div class="actions">
-      <a class="btn" href="https://github.com/artvandelay/diet-youtube/releases/latest">Download the release zip</a>
+      <a class="btn" href="https://github.com/artvandelay/diet-youtube/releases/latest/download/diet-youtube-v1.2.0.zip" download="diet-youtube-v1.2.0.zip">Download the release zip</a>
       <a class="btn secondary" href="#watch">Watch the 21s overview</a>
       <a class="btn secondary" href="#install">Install steps</a>
     </div>
+    <p class="actions-note"><a href="https://github.com/artvandelay/diet-youtube/releases/latest">Release notes</a></p>
   </header>
 
   <h2 id="watch">Watch</h2>
@@ -230,7 +232,7 @@
       <div class="card install">
         <p>You do not need to clone this repo or know how to code. Download one zip, unzip it, then point Chrome at that folder.</p>
         <ol class="install">
-          <li>Open <a href="https://github.com/artvandelay/diet-youtube/releases/latest">Releases</a>, scroll to <strong>Assets</strong>, and download <strong>diet-youtube-v1.2.0.zip</strong> only — not “Source code (zip)”.</li>
+          <li>Click <a href="https://github.com/artvandelay/diet-youtube/releases/latest/download/diet-youtube-v1.2.0.zip" download="diet-youtube-v1.2.0.zip">Download the release zip</a> — the browser starts <strong>diet-youtube-v1.2.0.zip</strong> immediately. Do not use “Source code (zip)”. Optional: <a href="https://github.com/artvandelay/diet-youtube/releases/latest">release notes</a>.</li>
           <li>Typical location: <code>/Users/YOURNAME/Downloads/diet-youtube-v1.2.0.zip</code> on a Mac, or <code>C:\Users\YOURNAME\Downloads\diet-youtube-v1.2.0.zip</code> on Windows.</li>
           <li>Unzip it (Mac: double-click; Windows: right-click → Extract All). You get a folder <code>diet-youtube-v1.2.0</code> next to the zip.</li>
           <li>Open that folder and confirm you see <code>manifest.json</code> inside it. That folder is what Chrome needs — not the <code>.zip</code> file. If you see a nested double folder, use the inner one that contains <code>manifest.json</code>.</li>

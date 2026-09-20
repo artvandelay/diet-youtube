@@ -7,7 +7,7 @@ Watch later is the diet home. The algorithmic Feed stays one extra click away. S
 Nothing leaves your browser. Preferences stay in Chrome storage. There is no Diet-Youtube server.
 
 **Author:** [artvandelay](https://github.com/artvandelay) · **Version:** 1.2.0 · **License:** MIT  
-**Live page:** [artvandelay.github.io/diet-youtube](https://artvandelay.github.io/diet-youtube/) · **Download:** [latest release zip](https://github.com/artvandelay/diet-youtube/releases/latest)
+**Live page:** [artvandelay.github.io/diet-youtube](https://artvandelay.github.io/diet-youtube/) · **Download:** [diet-youtube-v1.2.0.zip](https://github.com/artvandelay/diet-youtube/releases/latest/download/diet-youtube-v1.2.0.zip)
 
 A 21-second overview plays on the [live page](https://artvandelay.github.io/diet-youtube/#watch) (GitHub’s README does not play the video inline).
 
@@ -17,7 +17,7 @@ A 21-second overview plays on the [live page](https://artvandelay.github.io/diet
 
 Most people arrive on **this page** (the GitHub home for the project). You do **not** need to clone the repository or know how to code. You only need to:
 
-1. Download one zip file from Releases  
+1. Click Download so the zip starts immediately  
 2. Unzip it into a normal folder on your computer  
 3. Tell Chrome to “Load unpacked” and point it at that folder  
 
@@ -25,12 +25,11 @@ Chrome will show a **Developer mode** warning. That is normal for any extension 
 
 ### Step 1 — Download the release zip (not the source code)
 
-1. Open the latest release page:  
-   **[https://github.com/artvandelay/diet-youtube/releases/latest](https://github.com/artvandelay/diet-youtube/releases/latest)**
-2. Scroll down until you see **Assets**.
-3. Click the file named exactly:
+Click this link. The zip download starts immediately (you do not need to open GitHub and hunt Assets):
 
-   **`diet-youtube-v1.2.0.zip`**
+**[Download diet-youtube-v1.2.0.zip](https://github.com/artvandelay/diet-youtube/releases/latest/download/diet-youtube-v1.2.0.zip)**
+
+Optional: [release notes](https://github.com/artvandelay/diet-youtube/releases/latest).
 
 **Important:** Do **not** download the files named **“Source code (zip)”** or **“Source code (tar.gz)”**. Those are for developers. Everyday install uses only the Asset named `diet-youtube-v1.2.0.zip`.
 
@@ -117,7 +116,7 @@ Keep this folder somewhere stable (Downloads is fine). Do not delete it while th
 | --- | --- |
 | No **Load unpacked** button | Turn **Developer mode** On (top right of `chrome://extensions`). |
 | Chrome says it can’t load the extension / no manifest | You selected the wrong folder or still selected the zip. Open the folder and confirm `manifest.json` is directly inside it, then Load unpacked again. |
-| You downloaded something that looks like the whole GitHub repo | You probably grabbed **Source code (zip)**. Delete that, go back to Releases → Assets → download **`diet-youtube-v1.2.0.zip`** only. |
+| You downloaded something that looks like the whole GitHub repo | You probably grabbed **Source code (zip)**. Delete that, then use **[this zip download](https://github.com/artvandelay/diet-youtube/releases/latest/download/diet-youtube-v1.2.0.zip)** only. |
 | Extension is listed but YouTube looks normal | Click the Diet-Youtube toolbar icon and make sure it is **On**, then refresh youtube.com. |
 | Chrome warns about developer extensions when you restart | Expected for Load unpacked. Choose to keep the extension if you still want it. |
 
